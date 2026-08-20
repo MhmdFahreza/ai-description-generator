@@ -11,8 +11,8 @@ export default function Hero() {
           Pilih jenis konten yang ingin kamu buat
         </h1>
         <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#9A9CA5]">
-          Setiap kartu di bawah adalah generator khusus. Pilih satu, isi detail
-          produkmu, dan biarkan AI menuliskannya untukmu.
+          Setiap kartu di bawah adalah generator khusus. Pilih satu, isi secara
+          detail, dan biarkan AI menuliskannya untukmu.
         </p>
       </Reveal>
     </section>
