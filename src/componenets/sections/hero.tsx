@@ -8,7 +8,7 @@ export default function Hero() {
           Mulai dari sini
         </p>
         <h1 className="mt-3 max-w-xl font-serif text-3xl leading-tight text-[#F5F3ED] sm:text-4xl lg:text-5xl">
-          Pilih jenis konten yang ingin kamu buat
+          Pilih jenis deskripsi yang ingin kamu buat
         </h1>
         <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#9A9CA5]">
           Setiap kartu di bawah adalah generator khusus. Pilih satu, isi secara
