@@ -41,6 +41,8 @@ export default function TitleGeneratorPage() {
   const [media, setMedia] = useState<File | null>(null);
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
   const [mediaError, setMediaError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragCounter = useRef(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [description, setDescription] = useState("");
@@ -83,14 +85,11 @@ export default function TitleGeneratorPage() {
     style !== null &&
     !isLoading;
 
-  function handleMediaChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  function processFile(file: File) {
     const kind = getMediaKind(file);
     if (!kind) {
       setMediaError("File must be an image or video.");
-      e.target.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
@@ -100,6 +99,46 @@ export default function TitleGeneratorPage() {
       if (prev) URL.revokeObjectURL(prev);
       return URL.createObjectURL(file);
     });
+  }
+
+  function handleMediaChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  }
+
+  function handleDragEnter(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current += 1;
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
+      setIsDragging(true);
+    }
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current -= 1;
+    if (dragCounter.current <= 0) {
+      dragCounter.current = 0;
+      setIsDragging(false);
+    }
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    dragCounter.current = 0;
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processFile(file);
+    }
   }
 
   function handleRemoveMedia() {
@@ -192,7 +231,21 @@ export default function TitleGeneratorPage() {
                 />
 
                 {mediaPreviewUrl && media ? (
-                  <div className="relative mt-2 overflow-hidden rounded-lg border border-white/10">
+                  <div
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    className="relative mt-2 overflow-hidden rounded-lg border border-white/10"
+                  >
+                    {isDragging && (
+                      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#0F1115]/90 border-2 border-dashed border-[#E8623D]">
+                        <IconVideo className="h-6 w-6 text-[#E8623D] animate-bounce" />
+                        <span className="mt-2 text-sm font-medium text-[#F5F3ED]">
+                          Drop new file to replace
+                        </span>
+                      </div>
+                    )}
                     {mediaKind === "video" ? (
                       <video
                         src={mediaPreviewUrl}
@@ -211,7 +264,7 @@ export default function TitleGeneratorPage() {
                       type="button"
                       onClick={handleRemoveMedia}
                       aria-label="Remove media"
-                      className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#0F1115]/80 text-[#F5F3ED] transition-colors hover:bg-[#0F1115]"
+                      className="absolute right-2 top-2 z-20 flex h-7 w-7 items-center justify-center rounded-full bg-[#0F1115]/80 text-[#F5F3ED] transition-colors hover:bg-[#0F1115]"
                     >
                       <IconX className="h-3.5 w-3.5" />
                     </button>
@@ -223,15 +276,31 @@ export default function TitleGeneratorPage() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="mt-2 flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-white/15 bg-[#0F1115] px-4 py-8 text-center transition-colors hover:border-[#E8623D]/60"
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    className={`mt-2 flex w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed px-4 py-8 text-center transition-all ${
+                      isDragging
+                        ? "border-[#E8623D] bg-[#E8623D]/10 ring-2 ring-[#E8623D]/30 scale-[1.01]"
+                        : "border-white/15 bg-[#0F1115] hover:border-[#E8623D]/60"
+                    }`}
                   >
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-[#9A9CA5]">
+                    <span
+                      className={`pointer-events-none flex h-10 w-10 items-center justify-center rounded-full transition-transform ${
+                        isDragging
+                          ? "bg-[#E8623D]/20 text-[#E8623D] scale-110"
+                          : "bg-white/5 text-[#9A9CA5]"
+                      }`}
+                    >
                       <IconVideo className="h-5 w-5" />
                     </span>
-                    <span className="text-sm text-[#F5F3ED]">
-                      Click to upload a thumbnail or video
+                    <span className="pointer-events-none text-sm font-medium text-[#F5F3ED]">
+                      {isDragging
+                        ? "Drop your thumbnail or video here..."
+                        : "Click to upload or drag & drop a thumbnail or video"}
                     </span>
-                    <span className="text-xs text-[#5C5F68]">
+                    <span className="pointer-events-none text-xs text-[#5C5F68]">
                       Image or video · No size limit
                     </span>
                   </button>
