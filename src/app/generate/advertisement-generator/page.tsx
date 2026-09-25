@@ -13,7 +13,7 @@ import {
   IconImage,
 } from "@/componenets/icons";
 import { adStyleOptions, type AdStyle } from "@/constants/ad-styles";
-import { generateAdvertisement } from "@/lib/generators/advertisement";
+import { generateAdvertisement } from "@/lib/generators/advertisement-generator";
 
 const CORAL = "#E8623D";
 

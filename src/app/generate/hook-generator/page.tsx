@@ -14,7 +14,7 @@ import {
 } from "@/componenets/icons";
 import { hookStyleOptions, type HookStyle } from "@/constants/hook-styles";
 import { hookPlatformOptions, type HookPlatform } from "@/constants/hook-platforms";
-import { generateHook } from "@/lib/generators/hook";
+import { generateHook } from "@/lib/generators/hook-generator";
 
 const CORAL = "#E8623D";
 

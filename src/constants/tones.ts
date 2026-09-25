@@ -4,12 +4,10 @@ export type ToneOption = {
 };
 
 export const toneOptions: ToneOption[] = [
-  { value: "casual", label: "Santai (Casual)" },
-  { value: "formal", label: "Formal / Resmi" },
+  { value: "casual", label: "Casual" },
+  { value: "formal", label: "Formal" },
   { value: "persuasive", label: "Persuasif" },
   { value: "professional", label: "Profesional" },
-  { value: "friendly", label: "Ramah" },
-  { value: "luxury", label: "Mewah / Elegan" },
-  { value: "playful", label: "Playful / Fun" },
-  { value: "urgent", label: "Mendesak / Promo" },
+  { value: "playful", label: "Playful" },
+  { value: "urgent", label: "Promotion" },
 ];

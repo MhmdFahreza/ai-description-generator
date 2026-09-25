@@ -15,7 +15,7 @@ import {
   IconX,
 } from "@/componenets/icons";
 import { titleStyleOptions, type TitleStyle } from "@/constants/title-styles";
-import { generateTitle } from "@/lib/generators/title";
+import { generateTitle } from "@/lib/generators/title-generator";
 import { validateMediaFile, formatBytes, getMediaKind } from "@/lib/media";
 
 const CORAL = "#E8623D";
