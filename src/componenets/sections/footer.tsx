@@ -5,9 +5,7 @@ export default function Footer() {
         <p className="font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
           © {new Date().getFullYear()} AI Description Generator
         </p>
-        <p className="text-xs text-[#9A9CA5]">
-          Built by Muhammad Fahreza.
-        </p>
+        <p className="text-xs text-[#9A9CA5]">Built by Muhammad Fahreza.</p>
       </div>
     </footer>
   );
