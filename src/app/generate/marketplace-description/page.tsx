@@ -64,7 +64,7 @@ export default function MarketplaceDescriptionPage() {
           className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#9A9CA5] transition-colors hover:text-[#F5F3ED]"
         >
           <IconArrow className="h-3.5 w-3.5 rotate-180" />
-          Semua generator
+          All generators
         </Link>
 
         <div className="mt-6 flex items-center gap-3">
@@ -84,9 +84,9 @@ export default function MarketplaceDescriptionPage() {
           </div>
         </div>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#9A9CA5]">
-          Ceritakan konsep marketplace-nya, pilih jenis bisnis, gaya bahasa,
-          dan alur bisnisnya — dapatkan deskripsi yang siap tempel ke toko
-          kamu di Tokopedia, Shopee, dan lainnya.
+          Describe your marketplace concept, select a business type, tone, and
+          business model — get a description ready to paste into your Tokopedia,
+          Shopee, or any other store.
         </p>
 
         <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
@@ -95,13 +95,13 @@ export default function MarketplaceDescriptionPage() {
             <div className="space-y-6">
               <div>
                 <label htmlFor="concept" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Konsep Marketplace
+                  Marketplace Concept
                 </label>
                 <textarea
                   id="concept"
                   value={concept}
                   onChange={(e) => setConcept(e.target.value)}
-                  placeholder="Mau seperti apa konsep tokonya? Contoh: toko peralatan dapur rumahan, fokus ke bahan aman dan desain minimalis."
+                  placeholder="What's your store concept? e.g. home kitchen tools store, focused on safe materials and minimalist design."
                   rows={5}
                   className="mt-2 w-full resize-none rounded-lg border border-white/10 bg-[#0F1115] px-4 py-3 text-sm leading-relaxed text-[#F5F3ED] placeholder:text-[#5C5F68] outline-none transition-colors focus:border-[#4FB6A8]"
                 />
@@ -110,7 +110,7 @@ export default function MarketplaceDescriptionPage() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="businessType" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                    Jenis Bisnis
+                    Business Type
                   </label>
                   <div className="relative mt-2">
                     <select
@@ -131,7 +131,7 @@ export default function MarketplaceDescriptionPage() {
 
                 <div>
                   <label htmlFor="businessModel" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                    Alur Bisnis
+                    Business Model
                   </label>
                   <div className="relative mt-2">
                     <select
@@ -153,7 +153,7 @@ export default function MarketplaceDescriptionPage() {
 
               <div>
                 <label htmlFor="tone" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Gaya Bahasa
+                  Writing Style
                 </label>
                 <div className="relative mt-2">
                   <select
@@ -181,12 +181,12 @@ export default function MarketplaceDescriptionPage() {
                 {isLoading ? (
                   <>
                     <IconLoader className="h-4 w-4 animate-spin" />
-                    Membuat deskripsi...
+                    Generating description...
                   </>
                 ) : (
                   <>
                     <IconSparkle className="h-4 w-4" />
-                    Generate Deskripsi
+                    Generate Description
                   </>
                 )}
               </button>
@@ -208,7 +208,7 @@ export default function MarketplaceDescriptionPage() {
                   {copied ? (
                     <>
                       <IconCheck className="h-3.5 w-3.5 text-[#4FB6A8]" />
-                      Tersalin
+                      Copied
                     </>
                   ) : (
                     <>
@@ -238,7 +238,7 @@ export default function MarketplaceDescriptionPage() {
                     <IconStore className="h-5 w-5" />
                   </span>
                   <p className="max-w-[220px] text-sm leading-relaxed text-[#5C5F68]">
-                    Hasil deskripsi akan muncul di sini setelah kamu klik Generate.
+                    Your description will appear here after you click Generate.
                   </p>
                 </div>
               )}
@@ -251,7 +251,7 @@ export default function MarketplaceDescriptionPage() {
                 className="mt-6 inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#9A9CA5] transition-colors hover:text-[#F5F3ED]"
               >
                 <IconSparkle className="h-3.5 w-3.5" />
-                Generate ulang
+                Regenerate
               </button>
             )}
           </div>

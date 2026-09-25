@@ -57,7 +57,7 @@ export default function SeoDescriptionPage() {
           className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#9A9CA5] transition-colors hover:text-[#F5F3ED]"
         >
           <IconArrow className="h-3.5 w-3.5 rotate-180" />
-          Semua generator
+          All generators
         </Link>
 
         <div className="mt-6 flex items-center gap-3">
@@ -77,8 +77,8 @@ export default function SeoDescriptionPage() {
           </div>
         </div>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#9A9CA5]">
-          Ceritakan konsep halaman atau produknya, pilih gaya bahasa, dan
-          dapatkan meta description yang ramah mesin pencari.
+          Describe your page or product concept, pick a tone, and get a
+          search-engine-friendly meta description.
         </p>
 
         <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
@@ -87,13 +87,13 @@ export default function SeoDescriptionPage() {
             <div className="space-y-6">
               <div>
                 <label htmlFor="concept" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Konsep / Ide
+                  Concept / Idea
                 </label>
                 <textarea
                   id="concept"
                   value={concept}
                   onChange={(e) => setConcept(e.target.value)}
-                  placeholder="Mau seperti apa konsepnya? Contoh: halaman jasa desain logo untuk UMKM, fokus ke kecepatan dan harga terjangkau."
+                  placeholder="What's your concept? e.g. logo design service page for small businesses, focused on speed and affordable pricing."
                   rows={6}
                   className="mt-2 w-full resize-none rounded-lg border border-white/10 bg-[#0F1115] px-4 py-3 text-sm leading-relaxed text-[#F5F3ED] placeholder:text-[#5C5F68] outline-none transition-colors focus:border-[#E8623D]"
                 />
@@ -101,7 +101,7 @@ export default function SeoDescriptionPage() {
 
               <div>
                 <label htmlFor="tone" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Gaya Bahasa
+                  Writing Style
                 </label>
                 <div className="relative mt-2">
                   <select
@@ -129,7 +129,7 @@ export default function SeoDescriptionPage() {
                 {isLoading ? (
                   <>
                     <IconLoader className="h-4 w-4 animate-spin" />
-                    Membuat deskripsi...
+                    Generating description...
                   </>
                 ) : (
                   <>
@@ -156,7 +156,7 @@ export default function SeoDescriptionPage() {
                   {copied ? (
                     <>
                       <IconCheck className="h-3.5 w-3.5 text-[#4FB6A8]" />
-                      Tersalin
+                      Copied
                     </>
                   ) : (
                     <>
@@ -195,7 +195,7 @@ export default function SeoDescriptionPage() {
                     <IconSearch className="h-5 w-5" />
                   </span>
                   <p className="max-w-[220px] text-sm leading-relaxed text-[#5C5F68]">
-                    Hasil deskripsi akan muncul di sini setelah kamu klik Generate.
+                    Your description will appear here after you click Generate.
                   </p>
                 </div>
               )}
@@ -208,7 +208,7 @@ export default function SeoDescriptionPage() {
                 className="mt-6 inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#9A9CA5] transition-colors hover:text-[#F5F3ED]"
               >
                 <IconSparkle className="h-3.5 w-3.5" />
-                Generate ulang
+                Regenerate
               </button>
             )}
           </div>

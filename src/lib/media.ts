@@ -25,13 +25,13 @@ export function getMediaKind(file: File): MediaKind | null {
  */
 export function validateMediaFile(file: File): string | null {
   const kind = getMediaKind(file);
-  if (!kind) return "File harus berupa gambar atau video.";
+  if (!kind) return "File must be an image or video.";
 
   if (kind === "image" && file.size > MAX_IMAGE_SIZE_BYTES) {
-    return `Ukuran gambar maksimal ${formatBytes(MAX_IMAGE_SIZE_BYTES)}. File kamu ${formatBytes(file.size)}.`;
+    return `Image size limit is ${formatBytes(MAX_IMAGE_SIZE_BYTES)}. Your file is ${formatBytes(file.size)}.`;
   }
   if (kind === "video" && file.size > MAX_VIDEO_SIZE_BYTES) {
-    return `Ukuran video maksimal ${formatBytes(MAX_VIDEO_SIZE_BYTES)}. File kamu ${formatBytes(file.size)}.`;
+    return `Video size limit is ${formatBytes(MAX_VIDEO_SIZE_BYTES)}. Your file is ${formatBytes(file.size)}.`;
   }
   return null;
 }

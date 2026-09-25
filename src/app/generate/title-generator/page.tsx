@@ -13,6 +13,7 @@ import {
   IconImage,
   IconVideo,
   IconX,
+  IconChevronDown,
 } from "@/componenets/icons";
 import { titleStyleOptions, type TitleStyle } from "@/constants/title-styles";
 import { generateTitle } from "@/lib/generators/title-generator";
@@ -20,8 +21,6 @@ import { validateMediaFile, formatBytes, getMediaKind } from "@/lib/media";
 
 const CORAL = "#E8623D";
 
-// Placeholder header icon — swap for a proper icon from your set if you have
-// something like IconType / IconHeading.
 function IconType({ className }: { className?: string }) {
   return (
     <svg
@@ -46,11 +45,31 @@ export default function TitleGeneratorPage() {
 
   const [description, setDescription] = useState("");
   const [style, setStyle] = useState<TitleStyle | null>(null);
+  const [isStyleOpen, setIsStyleOpen] = useState(false);
+  const styleRef = useRef<HTMLDivElement>(null);
 
   const [titles, setTitles] = useState<string[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
+
+  // Close style dropdown on outside click or Escape
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (styleRef.current && !styleRef.current.contains(e.target as Node)) {
+        setIsStyleOpen(false);
+      }
+    }
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") setIsStyleOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -118,6 +137,7 @@ export default function TitleGeneratorPage() {
   }
 
   const mediaKind = media ? getMediaKind(media) : null;
+  const selectedStyle = titleStyleOptions.find((s) => s.value === style) ?? null;
 
   return (
     <div className="min-h-screen bg-[#0F1115] font-sans text-[#F5F3ED]">
@@ -129,7 +149,7 @@ export default function TitleGeneratorPage() {
           className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#9A9CA5] transition-colors hover:text-[#F5F3ED]"
         >
           <IconArrow className="h-3.5 w-3.5 rotate-180" />
-          Semua generator
+          All generators
         </Link>
 
         <div className="mt-6 flex items-center gap-3">
@@ -144,13 +164,13 @@ export default function TitleGeneratorPage() {
               GEN.03 · Title Generator
             </p>
             <h1 className="font-serif text-2xl text-[#F5F3ED] sm:text-3xl">
-              Generator Judul Konten
+              Content Title Generator
             </h1>
           </div>
         </div>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#9A9CA5]">
-          Upload thumbnail atau video kontennya, jelasin konteksnya, terus
-          pilih gaya bahasa — AI bakal kasih beberapa pilihan judul buat kamu.
+          Upload a thumbnail or video, describe your content, then pick a title
+          style — AI will generate several title options for you.
         </p>
 
         <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
@@ -160,7 +180,7 @@ export default function TitleGeneratorPage() {
               {/* Upload media */}
               <div>
                 <label className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Thumbnail atau Video Konten
+                  Thumbnail or Content Video
                 </label>
 
                 <input
@@ -183,14 +203,14 @@ export default function TitleGeneratorPage() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={mediaPreviewUrl}
-                        alt="Preview konten"
+                        alt="Content preview"
                         className="h-44 w-full object-cover"
                       />
                     )}
                     <button
                       type="button"
                       onClick={handleRemoveMedia}
-                      aria-label="Hapus media"
+                      aria-label="Remove media"
                       className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#0F1115]/80 text-[#F5F3ED] transition-colors hover:bg-[#0F1115]"
                     >
                       <IconX className="h-3.5 w-3.5" />
@@ -209,10 +229,10 @@ export default function TitleGeneratorPage() {
                       <IconVideo className="h-5 w-5" />
                     </span>
                     <span className="text-sm text-[#F5F3ED]">
-                      Klik untuk upload thumbnail atau video
+                      Click to upload a thumbnail or video
                     </span>
                     <span className="text-xs text-[#5C5F68]">
-                      Gambar maks 5MB · Video maks 20MB
+                      Image max 5MB · Video max 20MB
                     </span>
                   </button>
                 )}
@@ -222,58 +242,98 @@ export default function TitleGeneratorPage() {
                 )}
               </div>
 
-              {/* Deskripsi konten */}
+              {/* Content description */}
               <div>
                 <label htmlFor="description" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Deskripsi Konten
+                  Content Description
                 </label>
                 <textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Ceritakan isi kontennya: topiknya apa, poin pentingnya apa, siapa target penontonnya, dll."
+                  placeholder="Describe your content: the topic, key points, target audience, etc."
                   rows={4}
                   className="mt-2 w-full resize-none rounded-lg border border-white/10 bg-[#0F1115] px-4 py-3 text-sm leading-relaxed text-[#F5F3ED] placeholder:text-[#5C5F68] outline-none transition-colors focus:border-[#E8623D]"
                 />
               </div>
 
-              {/* Gaya bahasa */}
-              <div>
+              {/* Title style — dropdown */}
+              <div ref={styleRef} className="relative">
                 <label className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Gaya Bahasa Judul
+                  Title Style
                 </label>
-                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {titleStyleOptions.map((s) => {
-                    const isSelected = style === s.value;
-                    return (
-                      <button
-                        key={s.value}
-                        type="button"
-                        onClick={() => setStyle(s.value)}
-                        aria-pressed={isSelected}
-                        className={`flex items-start gap-2.5 rounded-lg border px-3.5 py-3 text-left transition-colors ${
-                          isSelected
-                            ? "border-[#E8623D] bg-white/5"
-                            : "border-white/10 hover:border-white/25"
-                        }`}
-                      >
-                        <span className="text-base leading-none">{s.emoji}</span>
-                        <span className="min-w-0">
-                          <span
-                            className={`block text-sm font-medium ${
-                              isSelected ? "text-[#E8623D]" : "text-[#F5F3ED]"
+
+                <button
+                  type="button"
+                  onClick={() => setIsStyleOpen((v) => !v)}
+                  aria-haspopup="listbox"
+                  aria-expanded={isStyleOpen}
+                  className={`mt-2 flex w-full items-center justify-between rounded-lg border px-4 py-3 text-sm transition-colors ${
+                    isStyleOpen ? "border-[#E8623D]" : "border-white/10 hover:border-white/25"
+                  } bg-[#0F1115]`}
+                >
+                  {selectedStyle ? (
+                    <span className="flex items-center gap-2.5">
+                      <span className="text-base leading-none">{selectedStyle.emoji}</span>
+                      <span className="text-[#F5F3ED]">{selectedStyle.label}</span>
+                    </span>
+                  ) : (
+                    <span className="text-[#5C5F68]">Select a title style</span>
+                  )}
+                  <IconChevronDown
+                    className={`h-4 w-4 text-[#9A9CA5] transition-transform ${
+                      isStyleOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {selectedStyle && !isStyleOpen && (
+                  <p className="mt-1.5 text-xs leading-snug text-[#5C5F68]">
+                    {selectedStyle.description}
+                  </p>
+                )}
+
+                {isStyleOpen && (
+                  <ul
+                    role="listbox"
+                    className="absolute z-20 mt-2 w-full overflow-hidden rounded-lg border border-white/10 bg-[#171A21] shadow-xl shadow-black/40"
+                  >
+                    {titleStyleOptions.map((s) => {
+                      const isSelected = style === s.value;
+                      return (
+                        <li key={s.value} role="option" aria-selected={isSelected}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setStyle(s.value);
+                              setIsStyleOpen(false);
+                            }}
+                            className={`flex w-full items-start gap-2.5 px-4 py-2.5 text-left transition-colors hover:bg-white/5 ${
+                              isSelected ? "bg-white/5" : ""
                             }`}
                           >
-                            {s.label}
-                          </span>
-                          <span className="mt-0.5 block text-xs leading-snug text-[#9A9CA5]">
-                            {s.description}
-                          </span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                            <span className="mt-0.5 text-base leading-none">{s.emoji}</span>
+                            <span className="min-w-0 flex-1">
+                              <span
+                                className={`block text-sm font-medium ${
+                                  isSelected ? "text-[#E8623D]" : "text-[#F5F3ED]"
+                                }`}
+                              >
+                                {s.label}
+                              </span>
+                              <span className="mt-0.5 block text-xs leading-snug text-[#9A9CA5]">
+                                {s.description}
+                              </span>
+                            </span>
+                            {isSelected && (
+                              <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#4FB6A8]" />
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
 
               <button
@@ -285,12 +345,12 @@ export default function TitleGeneratorPage() {
                 {isLoading ? (
                   <>
                     <IconLoader className="h-4 w-4 animate-spin" />
-                    Membuat judul...
+                    Generating titles...
                   </>
                 ) : (
                   <>
                     <IconSparkle className="h-4 w-4" />
-                    Generate Judul
+                    Generate Titles
                   </>
                 )}
               </button>
@@ -301,7 +361,7 @@ export default function TitleGeneratorPage() {
           <div className="rounded-2xl border border-white/10 bg-[#171A21] p-6 sm:p-8">
             <div className="flex items-center justify-between">
               <p className="font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                Hasil
+                Result
               </p>
               {titles && titles.length > 0 && !isLoading && (
                 <button
@@ -312,12 +372,12 @@ export default function TitleGeneratorPage() {
                   {copiedAll ? (
                     <>
                       <IconCheck className="h-3.5 w-3.5 text-[#4FB6A8]" />
-                      Semua tersalin
+                      All copied
                     </>
                   ) : (
                     <>
                       <IconCopy className="h-3.5 w-3.5" />
-                      Copy semua
+                      Copy all
                     </>
                   )}
                 </button>
@@ -352,7 +412,7 @@ export default function TitleGeneratorPage() {
                         <button
                           type="button"
                           onClick={() => handleCopyOne(title, i)}
-                          aria-label="Copy judul ini"
+                          aria-label="Copy this title"
                           className="shrink-0 text-[#5C5F68] transition-colors hover:text-[#F5F3ED]"
                         >
                           {isCopied ? (
@@ -371,7 +431,7 @@ export default function TitleGeneratorPage() {
                     <IconImage className="h-5 w-5" />
                   </span>
                   <p className="max-w-[220px] text-sm leading-relaxed text-[#5C5F68]">
-                    Pilihan judul akan muncul di sini setelah kamu klik Generate.
+                    Your title options will appear here after you click Generate.
                   </p>
                 </div>
               )}
@@ -384,7 +444,7 @@ export default function TitleGeneratorPage() {
                 className="mt-6 inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#9A9CA5] transition-colors hover:text-[#F5F3ED]"
               >
                 <IconSparkle className="h-3.5 w-3.5" />
-                Generate ulang
+                Regenerate
               </button>
             )}
           </div>

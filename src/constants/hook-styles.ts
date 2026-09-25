@@ -10,38 +10,38 @@ export interface HookStyleOption {
 export const hookStyleOptions: HookStyleOption[] = [
   {
     value: "question",
-    label: "Pertanyaan",
-    description: "Buka dengan pertanyaan yang relate ke masalah audiens",
+    label: "Question",
+    description: "Open with a question that resonates with the audience's pain point",
     emoji: "❓",
   },
   {
     value: "controversial",
-    label: "Kontroversial",
-    description: "Pernyataan berani/anti-mainstream yang bikin berhenti scroll",
+    label: "Controversial",
+    description: "A bold or counter-intuitive statement that stops the scroll",
     emoji: "⚡",
   },
   {
     value: "stat-fact",
-    label: "Statistik & Fakta",
-    description: "Angka atau fakta mengejutkan di awal",
+    label: "Stat & Fact",
+    description: "A surprising number or fact right at the start",
     emoji: "📊",
   },
   {
     value: "storytelling",
     label: "Storytelling",
-    description: "Buka dengan potongan cerita/pengalaman personal",
+    description: "Open with a snippet of a story or personal experience",
     emoji: "📖",
   },
   {
     value: "problem-agitate",
     label: "Problem-Agitate",
-    description: "Highlight masalah yang dialami audiens, bikin mereka relate",
+    description: "Highlight a problem the audience faces in a relatable way",
     emoji: "🎯",
   },
   {
     value: "curiosity-gap",
     label: "Curiosity Gap",
-    description: "Kasih info setengah, bikin penasaran sama kelanjutannya",
+    description: "Give partial info to make them want to know the rest",
     emoji: "🌀",
   },
 ];

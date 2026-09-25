@@ -35,7 +35,7 @@ export const categories: ToolCategory[] = [
   {
     code: "01",
     title: "Product Description",
-    desc: "Deskripsi produk yang menonjolkan fitur & manfaat, siap tempel ke listing.",
+    desc: "Highlight features & benefits in a listing-ready product description.",
     href: "/generate/product-description",
     accentKey: "amber",
     accent: AMBER,
@@ -45,7 +45,7 @@ export const categories: ToolCategory[] = [
   {
     code: "02",
     title: "Social Media Caption",
-    desc: "Caption yang nyantol untuk Instagram, TikTok, dan Facebook.",
+    desc: "Scroll-stopping captions for Instagram, TikTok, and Facebook.",
     href: "/generate/social-media-caption",
     accentKey: "coral",
     accent: CORAL,
@@ -54,7 +54,7 @@ export const categories: ToolCategory[] = [
   {
     code: "03",
     title: "Title Generator",
-    desc: "Judul yang catchy dan gampang diingat untuk produk atau kontenmu.",
+    desc: "Catchy, memorable titles for your products or content.",
     href: "/generate/title-generator",
     accentKey: "teal",
     accent: TEAL,
@@ -63,7 +63,7 @@ export const categories: ToolCategory[] = [
   {
     code: "04",
     title: "Hook Generator",
-    desc: "Kalimat pembuka yang bikin orang berhenti scroll.",
+    desc: "Opening lines that make people stop scrolling.",
     href: "/generate/hook-generator",
     accentKey: "violet",
     accent: VIOLET,
@@ -72,7 +72,7 @@ export const categories: ToolCategory[] = [
   {
     code: "05",
     title: "Advertisement Generator",
-    desc: "Copy iklan persuasif buat kampanye promosi kamu.",
+    desc: "Persuasive ad copy ready for your next campaign.",
     href: "/generate/advertisement-generator",
     accentKey: "amber",
     accent: AMBER,
@@ -81,7 +81,7 @@ export const categories: ToolCategory[] = [
   {
     code: "06",
     title: "SEO Description",
-    desc: "Meta description ramah mesin pencari — padat dan relevan.",
+    desc: "Search-engine-friendly meta descriptions — concise and relevant.",
     href: "/generate/seo-description",
     accentKey: "coral",
     accent: CORAL,
@@ -90,7 +90,7 @@ export const categories: ToolCategory[] = [
   {
     code: "07",
     title: "Marketplace Description",
-    desc: "Deskripsi lengkap untuk Tokopedia, Shopee, dan marketplace lain.",
+    desc: "Full store/product descriptions ready for Shopee, Tokopedia & more.",
     href: "/generate/marketplace-description",
     accentKey: "teal",
     accent: TEAL,

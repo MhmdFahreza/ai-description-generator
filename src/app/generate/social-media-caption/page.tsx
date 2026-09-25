@@ -143,7 +143,7 @@ export default function SocialMediaCaptionPage() {
           className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#9A9CA5] transition-colors hover:text-[#F5F3ED]"
         >
           <IconArrow className="h-3.5 w-3.5 rotate-180" />
-          Semua generator
+          All generators
         </Link>
 
         <div className="mt-6 flex items-center gap-3">
@@ -163,8 +163,8 @@ export default function SocialMediaCaptionPage() {
           </div>
         </div>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#9A9CA5]">
-          Upload hasil konten kamu, pilih mau diupload ke platform mana, terus
-          kasih ide singkat — AI yang nuliskan caption-nya.
+          Upload your content, choose a platform, give a quick idea — AI will
+          write the caption for you.
         </p>
 
         <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
@@ -174,7 +174,7 @@ export default function SocialMediaCaptionPage() {
               {/* Upload media */}
               <div>
                 <label className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Video atau Foto Konten
+                  Content Video or Photo
                 </label>
 
                 <input
@@ -197,14 +197,14 @@ export default function SocialMediaCaptionPage() {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={mediaPreviewUrl}
-                        alt="Preview konten"
+                        alt="Content preview"
                         className="h-44 w-full object-cover"
                       />
                     )}
                     <button
                       type="button"
                       onClick={handleRemoveMedia}
-                      aria-label="Hapus media"
+                      aria-label="Remove media"
                       className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#0F1115]/80 text-[#F5F3ED] transition-colors hover:bg-[#0F1115]"
                     >
                       <IconX className="h-3.5 w-3.5" />
@@ -223,10 +223,10 @@ export default function SocialMediaCaptionPage() {
                       <IconVideo className="h-5 w-5" />
                     </span>
                     <span className="text-sm text-[#F5F3ED]">
-                      Klik untuk upload video atau foto
+                      Click to upload a video or photo
                     </span>
                     <span className="text-xs text-[#5C5F68]">
-                      Gambar maks 5MB · Video maks 20MB
+                      Image max 5MB · Video max 20MB
                     </span>
                   </button>
                 )}
@@ -239,7 +239,7 @@ export default function SocialMediaCaptionPage() {
               {/* Pilih platform — dropdown */}
               <div ref={platformRef} className="relative">
                 <label className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Media Sosial
+                  Social Media
                 </label>
 
                 <button
@@ -265,7 +265,7 @@ export default function SocialMediaCaptionPage() {
                       <span className="text-[#F5F3ED]">{selectedPlatform.label}</span>
                     </span>
                   ) : (
-                    <span className="text-[#5C5F68]">Pilih media sosial</span>
+                    <span className="text-[#5C5F68]">Select a social media</span>
                   )}
                   <IconChevronDown
                     className={`h-4 w-4 text-[#9A9CA5] transition-transform ${
@@ -312,13 +312,13 @@ export default function SocialMediaCaptionPage() {
               {/* Prompt ide */}
               <div>
                 <label htmlFor="idea" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Ide / Prompt Caption
+                  Caption Idea / Prompt
                 </label>
                 <textarea
                   id="idea"
                   value={idea}
                   onChange={(e) => setIdea(e.target.value)}
-                  placeholder="Ceritakan konteks kontennya: momennya apa, mau nyampein pesan apa, ada campaign/promo nggak, dll."
+                  placeholder="Describe your content's context: the moment, the message, any campaign or promo, etc."
                   rows={5}
                   className="mt-2 w-full resize-none rounded-lg border border-white/10 bg-[#0F1115] px-4 py-3 text-sm leading-relaxed text-[#F5F3ED] placeholder:text-[#5C5F68] outline-none transition-colors focus:border-[#E8623D]"
                 />
@@ -333,7 +333,7 @@ export default function SocialMediaCaptionPage() {
                 {isLoading ? (
                   <>
                     <IconLoader className="h-4 w-4 animate-spin" />
-                    Membuat caption...
+                    Generating caption...
                   </>
                 ) : (
                   <>
@@ -360,7 +360,7 @@ export default function SocialMediaCaptionPage() {
                   {copied ? (
                     <>
                       <IconCheck className="h-3.5 w-3.5 text-[#4FB6A8]" />
-                      Tersalin
+                      Copied
                     </>
                   ) : (
                     <>
@@ -390,7 +390,7 @@ export default function SocialMediaCaptionPage() {
                     <IconImage className="h-5 w-5" />
                   </span>
                   <p className="max-w-[220px] text-sm leading-relaxed text-[#5C5F68]">
-                    Hasil caption akan muncul di sini setelah kamu klik Generate.
+                    Your caption will appear here after you click Generate.
                   </p>
                 </div>
               )}
@@ -403,7 +403,7 @@ export default function SocialMediaCaptionPage() {
                 className="mt-6 inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#9A9CA5] transition-colors hover:text-[#F5F3ED]"
               >
                 <IconSparkle className="h-3.5 w-3.5" />
-                Generate ulang
+                Regenerate
               </button>
             )}
           </div>

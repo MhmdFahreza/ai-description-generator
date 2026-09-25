@@ -35,7 +35,7 @@ export default function ToolsGrid() {
                   </span>
                   {c.featured && (
                     <span className="rounded-full border border-white/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-[#9A9CA5]">
-                      Populer
+                      Popular
                     </span>
                   )}
                 </div>
@@ -56,7 +56,7 @@ export default function ToolsGrid() {
               </div>
 
               <div className="mt-6 flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#F5F3ED]/70 transition-transform duration-300 group-hover:translate-x-1">
-                Mulai <IconArrow />
+                Start <IconArrow />
               </div>
             </Link>
           </Reveal>

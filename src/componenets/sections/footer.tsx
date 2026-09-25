@@ -6,7 +6,7 @@ export default function Footer() {
           © {new Date().getFullYear()} AI Description Generator
         </p>
         <p className="text-xs text-[#9A9CA5]">
-          Dibuat oleh Muhammad Fahreza.
+          Built by Muhammad Fahreza.
         </p>
       </div>
     </footer>

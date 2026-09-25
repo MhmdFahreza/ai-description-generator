@@ -11,12 +11,12 @@ export default function Header() {
               AI Description Generator
             </p>
             <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#9A9CA5]">
-              Toolkit Penulisan Konten
+              Content Writing Toolkit
             </p>
           </div>
         </div>
         <span className="hidden font-mono text-xs uppercase tracking-widest text-[#9A9CA5] sm:block">
-          7 Generator · Siap Pakai
+          7 Generators · Ready to Use
         </span>
       </div>
     </header>

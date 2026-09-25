@@ -3,16 +3,16 @@ import { IconArrow, IconFormDoc, IconSparkle } from "@/componenets/icons";
 
 const steps = [
   {
-    title: "Pilih generator yang sesuai",
-    desc: "Klik salah satu dari 7 kategori di atas, sesuai kebutuhan kontenmu.",
+    title: "Pick the right generator",
+    desc: "Click one of the 7 categories above that matches your content need.",
   },
   {
-    title: "Isi detail yang jelas",
-    desc: "Semakin lengkap detail yang kamu kasih, semakin relevan hasil tulisannya.",
+    title: "Fill in clear details",
+    desc: "The more specific your input, the more relevant the output will be.",
   },
   {
-    title: "Generate, lalu sesuaikan",
-    desc: "Dapatkan draft dalam hitungan detik, lalu edit gaya bahasanya sesuai brand kamu.",
+    title: "Generate, then refine",
+    desc: "Get a draft in seconds, then tweak the tone to match your brand.",
   },
 ];
 
@@ -38,10 +38,10 @@ export default function HowItWorks() {
         {/* Steps */}
         <Reveal delay={100} className="order-1 lg:order-2">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#F2B441]">
-            Cara kerja
+            How it works
           </p>
           <h2 className="mt-3 font-serif text-3xl leading-tight text-[#F5F3ED] sm:text-4xl">
-            Cara Membuat Deskripsi yang Menarik
+            How to Create Compelling Descriptions
           </h2>
 
           <ol className="mt-8 space-y-6">

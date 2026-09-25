@@ -11,6 +11,7 @@ import {
   IconCheck,
   IconLoader,
   IconImage,
+  IconChevronDown,
 } from "@/componenets/icons";
 import { hookStyleOptions, type HookStyle } from "@/constants/hook-styles";
 import { hookPlatformOptions, type HookPlatform } from "@/constants/hook-platforms";
@@ -18,8 +19,6 @@ import { generateHook } from "@/lib/generators/hook-generator";
 
 const CORAL = "#E8623D";
 
-// Placeholder header icon — swap for a real icon (e.g. IconZap / IconHook)
-// from your icon set if you have one.
 function IconHook({ className }: { className?: string }) {
   return (
     <svg
@@ -37,22 +36,6 @@ function IconHook({ className }: { className?: string }) {
   );
 }
 
-function IconChevronDown({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}
-
 export default function HookGeneratorPage() {
   const [topic, setTopic] = useState("");
   const [description, setDescription] = useState("");
@@ -62,6 +45,8 @@ export default function HookGeneratorPage() {
   const platformRef = useRef<HTMLDivElement>(null);
 
   const [style, setStyle] = useState<HookStyle | null>(null);
+  const [isStyleOpen, setIsStyleOpen] = useState(false);
+  const styleRef = useRef<HTMLDivElement>(null);
 
   const [hooks, setHooks] = useState<string[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,9 +58,15 @@ export default function HookGeneratorPage() {
       if (platformRef.current && !platformRef.current.contains(e.target as Node)) {
         setIsPlatformOpen(false);
       }
+      if (styleRef.current && !styleRef.current.contains(e.target as Node)) {
+        setIsStyleOpen(false);
+      }
     }
     function handleEscape(e: KeyboardEvent) {
-      if (e.key === "Escape") setIsPlatformOpen(false);
+      if (e.key === "Escape") {
+        setIsPlatformOpen(false);
+        setIsStyleOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleEscape);
@@ -118,6 +109,7 @@ export default function HookGeneratorPage() {
   }
 
   const selectedPlatform = hookPlatformOptions.find((p) => p.value === platform)!;
+  const selectedStyle = hookStyleOptions.find((s) => s.value === style) ?? null;
 
   return (
     <div className="min-h-screen bg-[#0F1115] font-sans text-[#F5F3ED]">
@@ -129,7 +121,7 @@ export default function HookGeneratorPage() {
           className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#9A9CA5] transition-colors hover:text-[#F5F3ED]"
         >
           <IconArrow className="h-3.5 w-3.5 rotate-180" />
-          Semua generator
+          All generators
         </Link>
 
         <div className="mt-6 flex items-center gap-3">
@@ -144,53 +136,53 @@ export default function HookGeneratorPage() {
               GEN.04 · Hook Generator
             </p>
             <h1 className="font-serif text-2xl text-[#F5F3ED] sm:text-3xl">
-              Generator Hook 
+              Hook Generator
             </h1>
           </div>
         </div>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#9A9CA5]">
-          Jelasin topik & isi kontennya, pilih gaya hook yang cocok — AI bakal
-          kasih beberapa opsi kalimat pembuka buat bikin orang berhenti scroll.
+          Describe your topic and content, pick a hook style — AI will generate
+          opening lines that make people stop scrolling.
         </p>
 
         <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
           {/* Form */}
           <div className="rounded-2xl border border-white/10 bg-[#171A21] p-6 sm:p-8">
             <div className="space-y-6">
-              {/* Topik konten */}
+              {/* Topic */}
               <div>
                 <label htmlFor="topic" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Topik Konten
+                  Content Topic
                 </label>
                 <input
                   id="topic"
                   type="text"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  placeholder="Misal: skincare kulit berjerawat, tips keuangan, review produk"
+                  placeholder="e.g. skincare for acne-prone skin, personal finance tips, product review"
                   className="mt-2 w-full rounded-lg border border-white/10 bg-[#0F1115] px-4 py-3 text-sm text-[#F5F3ED] placeholder:text-[#5C5F68] outline-none transition-colors focus:border-[#E8623D]"
                 />
               </div>
 
-              {/* Deskripsi konten */}
+              {/* Description */}
               <div>
                 <label htmlFor="description" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Deskripsi Konten
+                  Content Description
                 </label>
                 <textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Video/postingan ini isinya apa? Poin utama atau pesan yang mau disampaikan apa?"
+                  placeholder="What's this video/post about? What's the main point or message you want to convey?"
                   rows={4}
                   className="mt-2 w-full resize-none rounded-lg border border-white/10 bg-[#0F1115] px-4 py-3 text-sm leading-relaxed text-[#F5F3ED] placeholder:text-[#5C5F68] outline-none transition-colors focus:border-[#E8623D]"
                 />
               </div>
 
-              {/* Platform */}
+              {/* Platform — dropdown */}
               <div ref={platformRef} className="relative">
                 <label className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Platform <span className="normal-case text-[#5C5F68]">(opsional)</span>
+                  Platform <span className="normal-case text-[#5C5F68]">(optional)</span>
                 </label>
                 <button
                   type="button"
@@ -240,43 +232,83 @@ export default function HookGeneratorPage() {
                 )}
               </div>
 
-              {/* Gaya hook */}
-              <div>
+              {/* Hook style — dropdown */}
+              <div ref={styleRef} className="relative">
                 <label className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Gaya Hook
+                  Hook Style
                 </label>
-                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  {hookStyleOptions.map((s) => {
-                    const isSelected = style === s.value;
-                    return (
-                      <button
-                        key={s.value}
-                        type="button"
-                        onClick={() => setStyle(s.value)}
-                        aria-pressed={isSelected}
-                        className={`flex items-start gap-2.5 rounded-lg border px-3.5 py-3 text-left transition-colors ${
-                          isSelected
-                            ? "border-[#E8623D] bg-white/5"
-                            : "border-white/10 hover:border-white/25"
-                        }`}
-                      >
-                        <span className="text-base leading-none">{s.emoji}</span>
-                        <span className="min-w-0">
-                          <span
-                            className={`block text-sm font-medium ${
-                              isSelected ? "text-[#E8623D]" : "text-[#F5F3ED]"
+
+                <button
+                  type="button"
+                  onClick={() => setIsStyleOpen((v) => !v)}
+                  aria-haspopup="listbox"
+                  aria-expanded={isStyleOpen}
+                  className={`mt-2 flex w-full items-center justify-between rounded-lg border px-4 py-3 text-sm transition-colors ${
+                    isStyleOpen ? "border-[#E8623D]" : "border-white/10 hover:border-white/25"
+                  } bg-[#0F1115]`}
+                >
+                  {selectedStyle ? (
+                    <span className="flex items-center gap-2.5">
+                      <span className="text-base leading-none">{selectedStyle.emoji}</span>
+                      <span className="text-[#F5F3ED]">{selectedStyle.label}</span>
+                    </span>
+                  ) : (
+                    <span className="text-[#5C5F68]">Select a hook style</span>
+                  )}
+                  <IconChevronDown
+                    className={`h-4 w-4 text-[#9A9CA5] transition-transform ${
+                      isStyleOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {selectedStyle && !isStyleOpen && (
+                  <p className="mt-1.5 text-xs leading-snug text-[#5C5F68]">
+                    {selectedStyle.description}
+                  </p>
+                )}
+
+                {isStyleOpen && (
+                  <ul
+                    role="listbox"
+                    className="absolute z-20 mt-2 w-full overflow-hidden rounded-lg border border-white/10 bg-[#171A21] shadow-xl shadow-black/40"
+                  >
+                    {hookStyleOptions.map((s) => {
+                      const isSelected = style === s.value;
+                      return (
+                        <li key={s.value} role="option" aria-selected={isSelected}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setStyle(s.value);
+                              setIsStyleOpen(false);
+                            }}
+                            className={`flex w-full items-start gap-2.5 px-4 py-2.5 text-left transition-colors hover:bg-white/5 ${
+                              isSelected ? "bg-white/5" : ""
                             }`}
                           >
-                            {s.label}
-                          </span>
-                          <span className="mt-0.5 block text-xs leading-snug text-[#9A9CA5]">
-                            {s.description}
-                          </span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                            <span className="mt-0.5 text-base leading-none">{s.emoji}</span>
+                            <span className="min-w-0 flex-1">
+                              <span
+                                className={`block text-sm font-medium ${
+                                  isSelected ? "text-[#E8623D]" : "text-[#F5F3ED]"
+                                }`}
+                              >
+                                {s.label}
+                              </span>
+                              <span className="mt-0.5 block text-xs leading-snug text-[#9A9CA5]">
+                                {s.description}
+                              </span>
+                            </span>
+                            {isSelected && (
+                              <IconCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#4FB6A8]" />
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
 
               <button
@@ -288,7 +320,7 @@ export default function HookGeneratorPage() {
                 {isLoading ? (
                   <>
                     <IconLoader className="h-4 w-4 animate-spin" />
-                    Membuat hook...
+                    Generating hooks...
                   </>
                 ) : (
                   <>
@@ -304,7 +336,7 @@ export default function HookGeneratorPage() {
           <div className="rounded-2xl border border-white/10 bg-[#171A21] p-6 sm:p-8">
             <div className="flex items-center justify-between">
               <p className="font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                Hasil
+                Result
               </p>
               {hooks && hooks.length > 0 && !isLoading && (
                 <button
@@ -315,12 +347,12 @@ export default function HookGeneratorPage() {
                   {copiedAll ? (
                     <>
                       <IconCheck className="h-3.5 w-3.5 text-[#4FB6A8]" />
-                      Semua tersalin
+                      All copied
                     </>
                   ) : (
                     <>
                       <IconCopy className="h-3.5 w-3.5" />
-                      Copy semua
+                      Copy all
                     </>
                   )}
                 </button>
@@ -355,7 +387,7 @@ export default function HookGeneratorPage() {
                         <button
                           type="button"
                           onClick={() => handleCopyOne(hook, i)}
-                          aria-label="Copy hook ini"
+                          aria-label="Copy this hook"
                           className="shrink-0 text-[#5C5F68] transition-colors hover:text-[#F5F3ED]"
                         >
                           {isCopied ? (
@@ -374,7 +406,7 @@ export default function HookGeneratorPage() {
                     <IconImage className="h-5 w-5" />
                   </span>
                   <p className="max-w-[220px] text-sm leading-relaxed text-[#5C5F68]">
-                    Pilihan hook akan muncul di sini setelah kamu klik Generate.
+                    Your hook options will appear here after you click Generate.
                   </p>
                 </div>
               )}
@@ -387,7 +419,7 @@ export default function HookGeneratorPage() {
                 className="mt-6 inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#9A9CA5] transition-colors hover:text-[#F5F3ED]"
               >
                 <IconSparkle className="h-3.5 w-3.5" />
-                Generate ulang
+                Regenerate
               </button>
             )}
           </div>

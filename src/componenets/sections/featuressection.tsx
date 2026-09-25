@@ -6,10 +6,10 @@ export default function FeaturesSection() {
     <section className="mx-auto max-w-5xl px-6 pb-24">
       <Reveal className="text-center">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#F2B441]">
-          Kenapa pilih kami
+          Why choose us
         </p>
         <h2 className="mx-auto mt-3 max-w-xl font-serif text-3xl leading-tight text-[#F5F3ED] sm:text-4xl">
-          Dibuat supaya kamu bisa fokus produktif, bukan mikirin kata-kata
+          Built so you can stay focused on creating, not on finding the right words
         </h2>
       </Reveal>
 

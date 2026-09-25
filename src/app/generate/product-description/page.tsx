@@ -34,7 +34,7 @@ export default function ProductDescriptionPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Bersihin object URL preview pas komponen unmount, biar nggak bocor memori.
+  // Clean up object URL on unmount to prevent memory leaks.
   useEffect(() => {
     return () => {
       if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
@@ -54,7 +54,7 @@ export default function ProductDescriptionPage() {
     const error = validateImageFile(file);
     if (error) {
       setImageError(error);
-      e.target.value = ""; // reset biar bisa pilih ulang file yang sama
+      e.target.value = ""; // reset so the same file can be re-selected
       return;
     }
 
@@ -108,7 +108,7 @@ export default function ProductDescriptionPage() {
           className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#9A9CA5] transition-colors hover:text-[#F5F3ED]"
         >
           <IconArrow className="h-3.5 w-3.5 rotate-180" />
-          Semua generator
+          All generators
         </Link>
 
         <div className="mt-6 flex items-center gap-3">
@@ -128,9 +128,8 @@ export default function ProductDescriptionPage() {
           </div>
         </div>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#9A9CA5]">
-          Upload foto produknya, kasih tau namanya, ceritakan idenya, pilih
-          tone-nya, dan biarkan AI nulisin deskripsi produk yang siap tempel
-          ke listing.
+          Upload a product photo, enter the name, describe your idea, pick a
+          tone, and let AI write a listing-ready product description.
         </p>
 
         {/* Form + Result */}
@@ -141,7 +140,7 @@ export default function ProductDescriptionPage() {
               {/* Foto produk */}
               <div>
                 <label className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Foto Produk
+                  Product Photo
                 </label>
 
                 <input
@@ -163,7 +162,7 @@ export default function ProductDescriptionPage() {
                     <button
                       type="button"
                       onClick={handleRemoveImage}
-                      aria-label="Hapus foto"
+                      aria-label="Remove photo"
                       className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-[#0F1115]/80 text-[#F5F3ED] transition-colors hover:bg-[#0F1115]"
                     >
                       <IconX className="h-3.5 w-3.5" />
@@ -184,10 +183,10 @@ export default function ProductDescriptionPage() {
                       <IconImage className="h-5 w-5" />
                     </span>
                     <span className="text-sm text-[#F5F3ED]">
-                      Klik untuk upload foto produk
+                      Click to upload a product photo
                     </span>
                     <span className="text-xs text-[#5C5F68]">
-                      PNG atau JPG, maks 500KB
+                      PNG or JPG, max 500KB
                     </span>
                   </button>
                 )}
@@ -199,27 +198,27 @@ export default function ProductDescriptionPage() {
 
               <div>
                 <label htmlFor="productName" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Nama / Jenis Produk
+                  Product Name / Type
                 </label>
                 <input
                   id="productName"
                   type="text"
                   value={productName}
                   onChange={(e) => setProductName(e.target.value)}
-                  placeholder="Contoh: Kaos Polos Cotton Combed 30s"
+                  placeholder="e.g. Plain Cotton Combed 30s T-Shirt"
                   className="mt-2 w-full rounded-lg border border-white/10 bg-[#0F1115] px-4 py-3 text-sm text-[#F5F3ED] placeholder:text-[#5C5F68] outline-none transition-colors focus:border-[#F2B441]"
                 />
               </div>
 
               <div>
                 <label htmlFor="idea" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Ide / Detail Produk
+                  Idea / Product Details
                 </label>
                 <textarea
                   id="idea"
                   value={idea}
                   onChange={(e) => setIdea(e.target.value)}
-                  placeholder="Ceritakan detail produkmu: bahan, keunggulan, ukuran, target pembeli, dll."
+                  placeholder="Describe your product: material, key features, size, target buyer, etc."
                   rows={5}
                   className="mt-2 w-full resize-none rounded-lg border border-white/10 bg-[#0F1115] px-4 py-3 text-sm leading-relaxed text-[#F5F3ED] placeholder:text-[#5C5F68] outline-none transition-colors focus:border-[#F2B441]"
                 />
@@ -227,7 +226,7 @@ export default function ProductDescriptionPage() {
 
               <div>
                 <label htmlFor="tone" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Tone / Gaya Bahasa
+                  Tone / Writing Style
                 </label>
                 <div className="relative mt-2">
                   <select
@@ -255,12 +254,12 @@ export default function ProductDescriptionPage() {
                 {isLoading ? (
                   <>
                     <IconLoader className="h-4 w-4 animate-spin" />
-                    Membuat deskripsi...
+                    Generating description...
                   </>
                 ) : (
                   <>
                     <IconSparkle className="h-4 w-4" />
-                    Generate Deskripsi
+                    Generate Description
                   </>
                 )}
               </button>
@@ -282,7 +281,7 @@ export default function ProductDescriptionPage() {
                   {copied ? (
                     <>
                       <IconCheck className="h-3.5 w-3.5 text-[#4FB6A8]" />
-                      Tersalin
+                      Copied
                     </>
                   ) : (
                     <>
@@ -313,7 +312,7 @@ export default function ProductDescriptionPage() {
                     <IconSparkle className="h-5 w-5" />
                   </span>
                   <p className="max-w-[220px] text-sm leading-relaxed text-[#5C5F68]">
-                    Hasil deskripsi akan muncul di sini setelah kamu klik Generate.
+                    Your description will appear here after you click Generate.
                   </p>
                 </div>
               )}
@@ -326,7 +325,7 @@ export default function ProductDescriptionPage() {
                 className="mt-6 inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#9A9CA5] transition-colors hover:text-[#F5F3ED]"
               >
                 <IconSparkle className="h-3.5 w-3.5" />
-                Generate ulang
+                Regenerate
               </button>
             )}
           </div>
