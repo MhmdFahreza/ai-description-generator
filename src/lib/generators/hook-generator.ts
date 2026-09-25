@@ -1,7 +1,4 @@
-// src/lib/generators/hook.ts
-//
-// Stub — wire this up the same way you wired generateTitle /
-// generateSocialMediaCaption. Adjust endpoint/payload to match your convention.
+// src/lib/generators/hook-generator.ts
 
 import type { HookStyle } from "@/constants/hook-styles";
 import type { HookPlatform } from "@/constants/hook-platforms";
@@ -25,10 +22,11 @@ export async function generateHook({
     body: JSON.stringify({ topic, description, platform, style }),
   });
 
+  const data = await res.json();
+
   if (!res.ok) {
-    throw new Error("Gagal generate hook");
+    throw new Error(data?.error ?? "Gagal generate hook.");
   }
 
-  const data = await res.json();
   return data.hooks as string[];
 }

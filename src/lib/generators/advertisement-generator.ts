@@ -1,7 +1,4 @@
-// src/lib/generators/advertisement.ts
-//
-// Stub — wire this to your actual API route the same way as the other
-// generators. Adjust endpoint/payload to match your convention.
+// src/lib/generators/advertisement-generator.ts
 
 import type { AdStyle } from "@/constants/ad-styles";
 
@@ -20,10 +17,11 @@ export async function generateAdvertisement({
     body: JSON.stringify({ description, style }),
   });
 
+  const data = await res.json();
+
   if (!res.ok) {
-    throw new Error("Gagal generate iklan");
+    throw new Error(data?.error ?? "Gagal generate iklan.");
   }
 
-  const data = await res.json();
   return data.text as string;
 }
