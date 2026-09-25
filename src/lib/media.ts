@@ -8,7 +8,9 @@ export function formatBytes(bytes: number): string {
   const kb = bytes / 1024;
   if (kb < 1024) return `${kb.toFixed(kb < 10 ? 1 : 0)} KB`;
   const mb = kb / 1024;
-  return `${mb.toFixed(1)} MB`;
+  if (mb < 1024) return `${mb.toFixed(1)} MB`;
+  const gb = mb / 1024;
+  return `${gb.toFixed(2)} GB`;
 }
 
 export function getMediaKind(file: File): MediaKind | null {

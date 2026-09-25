@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
   IconSparkle,
   IconZap,
@@ -12,7 +13,7 @@ export type Feature = {
   title: string;
   desc: string;
   accent: string;
-  icon: JSX.Element;
+  icon: ReactNode;
 };
 
 export const features: Feature[] = [

@@ -6,7 +6,7 @@ export interface HookPlatformOption {
 }
 
 export const hookPlatformOptions: HookPlatformOption[] = [
-  { value: "general", label: "Umum" },
+  { value: "general", label: "General" },
   { value: "tiktok", label: "TikTok" },
   { value: "reels", label: "Instagram Reels" },
   { value: "shorts", label: "YouTube Shorts" },

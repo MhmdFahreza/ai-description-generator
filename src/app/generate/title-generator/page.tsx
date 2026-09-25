@@ -17,7 +17,7 @@ import {
 } from "@/componenets/icons";
 import { titleStyleOptions, type TitleStyle } from "@/constants/title-styles";
 import { generateTitle } from "@/lib/generators/title-generator";
-import { validateMediaFile, formatBytes, getMediaKind } from "@/lib/media";
+import { formatBytes, getMediaKind } from "@/lib/media";
 
 const CORAL = "#E8623D";
 
@@ -87,9 +87,9 @@ export default function TitleGeneratorPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const error = validateMediaFile(file);
-    if (error) {
-      setMediaError(error);
+    const kind = getMediaKind(file);
+    if (!kind) {
+      setMediaError("File must be an image or video.");
       e.target.value = "";
       return;
     }
@@ -232,7 +232,7 @@ export default function TitleGeneratorPage() {
                       Click to upload a thumbnail or video
                     </span>
                     <span className="text-xs text-[#5C5F68]">
-                      Image max 5MB · Video max 20MB
+                      Image or video · No size limit
                     </span>
                   </button>
                 )}

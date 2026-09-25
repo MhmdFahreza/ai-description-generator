@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
   IconBox,
   IconChat,
@@ -19,7 +20,7 @@ export type ToolCategory = {
   accentKey: AccentKey;
   accent: string;
   featured?: boolean;
-  icon: JSX.Element;
+  icon: ReactNode;
 };
 
 // Static, literal class names so Tailwind's scanner can find and generate

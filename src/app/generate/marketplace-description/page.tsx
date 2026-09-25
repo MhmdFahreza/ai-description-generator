@@ -197,7 +197,7 @@ export default function MarketplaceDescriptionPage() {
           <div className="rounded-2xl border border-white/10 bg-[#171A21] p-6 sm:p-8">
             <div className="flex items-center justify-between">
               <p className="font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                Hasil
+                Result
               </p>
               {result && !isLoading && (
                 <button

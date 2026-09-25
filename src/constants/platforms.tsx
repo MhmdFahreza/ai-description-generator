@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
   IconCamera,
   IconMusicNote,
@@ -20,7 +21,7 @@ export type PlatformOption = {
   value: Platform;
   label: string;
   accent: string;
-  icon: JSX.Element;
+  icon: ReactNode;
 };
 
 export const platformOptions: PlatformOption[] = [

@@ -112,7 +112,7 @@ export default function AdvertisementGeneratorPage() {
           className="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#9A9CA5] transition-colors hover:text-[#F5F3ED]"
         >
           <IconArrow className="h-3.5 w-3.5 rotate-180" />
-          Semua generator
+          All generators
         </Link>
 
         <div className="mt-6 flex items-center gap-3">
@@ -127,38 +127,37 @@ export default function AdvertisementGeneratorPage() {
               GEN.05 · Advertisement Generator
             </p>
             <h1 className="font-serif text-2xl text-[#F5F3ED] sm:text-3xl">
-              Generator Teks Iklan
+              Ad Copy Generator
             </h1>
           </div>
         </div>
         <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#9A9CA5]">
-          Jelasin produk atau iklan yang mau dibuat, pilih gaya bahasanya —
-          AI yang nuliskan teks iklannya.
+          Describe your product or ad, choose a writing style — AI will craft high-converting ad copy for you.
         </p>
 
         <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start">
           {/* Form */}
           <div className="rounded-2xl border border-white/10 bg-[#171A21] p-6 sm:p-8">
             <div className="space-y-6">
-              {/* Deskripsi iklan */}
+              {/* Ad description */}
               <div>
                 <label htmlFor="description" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Deskripsi Iklan
+                  Ad Description
                 </label>
                 <textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Ceritakan produk/jasanya apa, keunggulannya apa, ada promo atau penawaran khusus nggak, siapa target audiensnya, dll."
+                  placeholder="Describe your product/service, key selling points, promotions or special offers, target audience, etc."
                   rows={7}
                   className="mt-2 w-full resize-none rounded-lg border border-white/10 bg-[#0F1115] px-4 py-3 text-sm leading-relaxed text-[#F5F3ED] placeholder:text-[#5C5F68] outline-none transition-colors focus:border-[#E8623D]"
                 />
               </div>
 
-              {/* Gaya bahasa — dropdown */}
+              {/* Writing style — dropdown */}
               <div ref={styleRef} className="relative">
                 <label className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Gaya Bahasa
+                  Writing Style
                 </label>
 
                 <button
@@ -176,7 +175,7 @@ export default function AdvertisementGeneratorPage() {
                       <span className="text-[#F5F3ED]">{selectedStyle.label}</span>
                     </span>
                   ) : (
-                    <span className="text-[#5C5F68]">Pilih gaya bahasa</span>
+                    <span className="text-[#5C5F68]">Select a writing style</span>
                   )}
                   <IconChevronDown
                     className={`h-4 w-4 text-[#9A9CA5] transition-transform ${
@@ -243,12 +242,12 @@ export default function AdvertisementGeneratorPage() {
                 {isLoading ? (
                   <>
                     <IconLoader className="h-4 w-4 animate-spin" />
-                    Membuat iklan...
+                    Generating ad copy...
                   </>
                 ) : (
                   <>
                     <IconSparkle className="h-4 w-4" />
-                    Generate Iklan
+                    Generate Ad Copy
                   </>
                 )}
               </button>
@@ -259,7 +258,7 @@ export default function AdvertisementGeneratorPage() {
           <div className="rounded-2xl border border-white/10 bg-[#171A21] p-6 sm:p-8">
             <div className="flex items-center justify-between">
               <p className="font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                Hasil
+                Result
               </p>
               {result && !isLoading && (
                 <button
@@ -270,7 +269,7 @@ export default function AdvertisementGeneratorPage() {
                   {copied ? (
                     <>
                       <IconCheck className="h-3.5 w-3.5 text-[#4FB6A8]" />
-                      Tersalin
+                      Copied
                     </>
                   ) : (
                     <>
@@ -300,7 +299,7 @@ export default function AdvertisementGeneratorPage() {
                     <IconImage className="h-5 w-5" />
                   </span>
                   <p className="max-w-[220px] text-sm leading-relaxed text-[#5C5F68]">
-                    Hasil teks iklan akan muncul di sini setelah kamu klik Generate.
+                    Your ad copy will appear here after you click Generate.
                   </p>
                 </div>
               )}
@@ -313,7 +312,7 @@ export default function AdvertisementGeneratorPage() {
                 className="mt-6 inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-widest text-[#9A9CA5] transition-colors hover:text-[#F5F3ED]"
               >
                 <IconSparkle className="h-3.5 w-3.5" />
-                Generate ulang
+                Regenerate
               </button>
             )}
           </div>
