@@ -14,8 +14,8 @@ export const COOKIE_CATEGORIES = [
     badge: "Selalu Aktif (Wajib)",
     isMandatory: true,
     description:
-      "Cookie yang esensial agar website dapat beroperasi dengan aman dan menyimpan preferensi privasi Anda. Cookie ini tidak dapat dinonaktifkan.",
-    examples: ["cookie_consent_preferences", "app_session"],
+      "Cookie yang esensial untuk menyimpan pilihan privasi Anda agar banner ini tidak muncul kembali. Cookie ini tidak dapat dinonaktifkan.",
+    examples: ["cookie_consent_preferences"],
   },
   {
     id: "analytics" as const,
@@ -32,8 +32,8 @@ export const COOKIE_CATEGORIES = [
     badge: "Opsional",
     isMandatory: false,
     description:
-      "Cookie untuk preferensi konten rekomendasi dan iklan relevan.",
-    examples: ["_ad_user_pref", "_campaign_ref"],
+      "Cookie dari Google AdSense untuk menampilkan iklan dan membatasi frekuensi iklan yang sama.",
+    examples: ["__gads", "__gpi"],
   },
 ];
 
@@ -90,14 +90,6 @@ export function applyPreferences(prefs: {
   };
 
   setCookie(COOKIE_CONSENT_KEY, JSON.stringify(completePrefs), 365);
-
-  if (completePrefs.advertising) {
-    setCookie("_ad_user_pref", "personalized_ads_v1", 30);
-    setCookie("_campaign_ref", "direct_generator", 7);
-  } else {
-    deleteCookie("_ad_user_pref");
-    deleteCookie("_campaign_ref");
-  }
 
   if (typeof window !== "undefined") {
     window.dispatchEvent(

@@ -4,6 +4,7 @@ import "./globals.css";
 import Providers from "@/componenets/providers";
 import CookieBanner from "@/componenets/cookies/cookie-banner";
 import GoogleAnalytics from "@/componenets/cookies/google-analytics";
+import GoogleAdSense from "@/componenets/cookies/google-adsense";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,6 +19,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Ai Description Generator",
   description: "Generated descriptions for your products, social media, and more.",
+  other: process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID
+    ? { "google-adsense-account": process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID }
+    : undefined,
 };
 
 export default function RootLayout({
@@ -34,6 +38,7 @@ export default function RootLayout({
         <Providers>{children}</Providers>
         <CookieBanner />
         <GoogleAnalytics />
+        <GoogleAdSense />
       </body>
     </html>
   );

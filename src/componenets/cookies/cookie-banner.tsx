@@ -42,7 +42,7 @@ export default function CookieBanner() {
                 Cookies
               </h4>
               <p className="mt-1 text-xs text-[#9A9CA5] leading-relaxed max-w-2xl">
-                We use cookies to improve your experience while using this generator. Necessary cookies are required for the system to function properly, while you can choose whether to allow analytics and advertising cookies through the options below.
+                We use cookies to improve your experience while using this generator. Necessary cookies, which remember your cookie choice, are always active. Analytics and advertising cookies are only set if you accept.
               </p>
             </div>
           </div>
