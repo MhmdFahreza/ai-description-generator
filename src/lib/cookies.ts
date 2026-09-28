@@ -24,7 +24,7 @@ export const COOKIE_CATEGORIES = [
     isMandatory: false,
     description:
       "Cookie untuk menganalisis performa dan penggunaan generator secara anonim untuk peningkatan fitur.",
-    examples: ["_site_analytics_id", "_analytics_session"],
+    examples: ["_ga", "_ga_<MEASUREMENT_ID>"],
   },
   {
     id: "advertising" as const,
@@ -90,14 +90,6 @@ export function applyPreferences(prefs: {
   };
 
   setCookie(COOKIE_CONSENT_KEY, JSON.stringify(completePrefs), 365);
-
-  if (completePrefs.analytics) {
-    setCookie("_site_analytics_id", "analytics_" + Math.random().toString(36).substring(2, 10), 30);
-    setCookie("_analytics_session", "session_active", 1);
-  } else {
-    deleteCookie("_site_analytics_id");
-    deleteCookie("_analytics_session");
-  }
 
   if (completePrefs.advertising) {
     setCookie("_ad_user_pref", "personalized_ads_v1", 30);
