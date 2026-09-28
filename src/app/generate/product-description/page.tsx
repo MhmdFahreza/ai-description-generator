@@ -267,7 +267,7 @@ export default function ProductDescriptionPage() {
 
               <div>
                 <label htmlFor="productName" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Product Name / Type
+                  Product Name
                 </label>
                 <input
                   id="productName"
@@ -281,7 +281,7 @@ export default function ProductDescriptionPage() {
 
               <div>
                 <label htmlFor="idea" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Idea / Product Details
+                  Product Details
                 </label>
                 <textarea
                   id="idea"
@@ -295,7 +295,7 @@ export default function ProductDescriptionPage() {
 
               <div>
                 <label htmlFor="tone" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Tone / Writing Style
+                  Tone
                 </label>
                 <div className="relative mt-2">
                   <select

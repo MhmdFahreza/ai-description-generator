@@ -87,7 +87,7 @@ export default function SeoDescriptionPage() {
             <div className="space-y-6">
               <div>
                 <label htmlFor="concept" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Concept / Idea
+                  Concept
                 </label>
                 <textarea
                   id="concept"

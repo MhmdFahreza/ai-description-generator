@@ -381,7 +381,7 @@ export default function SocialMediaCaptionPage() {
               {/* Prompt ide */}
               <div>
                 <label htmlFor="idea" className="block font-mono text-xs uppercase tracking-widest text-[#9A9CA5]">
-                  Caption Idea / Prompt
+                  Caption Idea
                 </label>
                 <textarea
                   id="idea"
