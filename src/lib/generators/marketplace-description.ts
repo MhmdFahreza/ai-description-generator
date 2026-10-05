@@ -1,5 +1,7 @@
 // src/lib/generators/marketplace-description.ts
 
+import { apiFetch } from "../api-fetch";
+
 export type GenerateInput = {
   concept: string;
   businessType: string;
@@ -13,7 +15,7 @@ export async function generateMarketplaceDescription({
   businessModel,
   tone,
 }: GenerateInput): Promise<string> {
-  const res = await fetch("/api/generate/marketplace-description", {
+  const res = await apiFetch("/api/generate/marketplace-description", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ concept, businessType, businessModel, tone }),

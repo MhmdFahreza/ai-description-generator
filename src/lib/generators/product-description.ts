@@ -1,3 +1,5 @@
+import { apiFetch } from "../api-fetch";
+
 export type GenerateInput = {
   productName: string;
   idea: string;
@@ -25,7 +27,7 @@ export async function generateProductDescription({
 }: GenerateInput): Promise<string> {
   void image; // belum dipakai, lihat NOTE di atas
 
-  const res = await fetch("/api/generate/product-description", {
+  const res = await apiFetch("/api/generate/product-description", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ productName, idea, tone }),

@@ -1,5 +1,7 @@
 // src/lib/generators/seo-description.ts
 
+import { apiFetch } from "../api-fetch";
+
 export type GenerateInput = {
   concept: string;
   tone: string;
@@ -9,7 +11,7 @@ export async function generateSeoDescription({
   concept,
   tone,
 }: GenerateInput): Promise<string> {
-  const res = await fetch("/api/generate/seo-description", {
+  const res = await apiFetch("/api/generate/seo-description", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ concept, tone }),

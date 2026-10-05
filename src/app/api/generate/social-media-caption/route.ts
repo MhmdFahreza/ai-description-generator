@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { withGuard } from "@/lib/api-guard";
 
 export const runtime = "nodejs";
 
@@ -28,96 +29,82 @@ const platformGuides: Record<Platform, string> = {
     "LinkedIn: profesional dan reflektif, angkat insight atau pembelajaran, minim emoji, 3-5 kalimat, tutup dengan sampai 3 hashtag profesional.",
 };
 
-type Body = {
-  platform?: string;
-  idea?: string;
-};
-
-export async function POST(req: NextRequest) {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "GROQ_API_KEY belum diset di server." },
-      { status: 500 }
-    );
-  }
-
-  let body: Body;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json(
-      { error: "Body request tidak valid." },
-      { status: 400 }
-    );
-  }
-
-  const idea = body.idea?.trim();
-  const platform = (body.platform ?? "instagram") as Platform;
-
-  if (!idea) {
-    return NextResponse.json({ error: "idea wajib diisi." }, { status: 400 });
-  }
-
-  const guide = platformGuides[platform] ?? platformGuides.instagram;
-
-  try {
-    const groqRes = await fetch(GROQ_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        temperature: 0.9,
-        top_p: 0.9,
-        max_completion_tokens: 300,
-        // Task-nya nulis caption, jadi reasoning effort rendah aja — lebih cepat & murah.
-        reasoning_effort: "low",
-        messages: [
-          {
-            role: "system",
-            content:
-              "Kamu social media strategist Indonesia yang ahli bikin caption yang nyantol sesuai karakter tiap platform. " +
-              `Tulis dalam Bahasa Indonesia (boleh selipin gaya bahasa gaul/Inggris ringan kalau natural). Ikuti panduan gaya berikut: ${guide} ` +
-              "Jangan pakai heading atau markdown, langsung teks caption yang siap post.",
-          },
-          {
-            role: "user",
-            content: `Konteks/ide konten: ${idea}`,
-          },
-        ],
-      }),
-    });
-
-    if (!groqRes.ok) {
-      const errText = await groqRes.text();
-      console.error("Groq API error:", groqRes.status, errText);
+export const POST = withGuard(
+  [
+    { name: "idea", required: true, freeText: true },
+    { name: "platform", required: false },
+  ],
+  async (body) => {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
       return NextResponse.json(
-        { error: "AI sedang bermasalah, coba lagi sebentar lagi." },
-        { status: 502 }
+        { error: "GROQ_API_KEY belum diset di server." },
+        { status: 500 }
       );
     }
 
-    const data = await groqRes.json();
-    // `message.content` udah jawaban final — reasoning chain-nya (kalau ada)
-    // ditaruh Groq di field `reasoning` yang terpisah, jadi ga perlu di-strip.
-    const result: string | undefined = data?.choices?.[0]?.message?.content;
+    const idea = (body.idea as string).trim();
+    const platform = ((body.platform as string) ?? "instagram") as Platform;
+    const guide = platformGuides[platform] ?? platformGuides.instagram;
 
-    if (!result) {
+    try {
+      const groqRes = await fetch(GROQ_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          temperature: 0.9,
+          top_p: 0.9,
+          max_completion_tokens: 300,
+          // Task-nya nulis caption, jadi reasoning effort rendah aja — lebih cepat & murah.
+          reasoning_effort: "low",
+          messages: [
+            {
+              role: "system",
+              content:
+                "Kamu social media strategist Indonesia yang ahli bikin caption yang nyantol sesuai karakter tiap platform. " +
+                `Tulis dalam Bahasa Indonesia (boleh selipin gaya bahasa gaul/Inggris ringan kalau natural). Ikuti panduan gaya berikut: ${guide} ` +
+                "Jangan pakai heading atau markdown, langsung teks caption yang siap post.",
+            },
+            {
+              role: "user",
+              content: `Konteks/ide konten: ${idea}`,
+            },
+          ],
+        }),
+      });
+
+      if (!groqRes.ok) {
+        const errText = await groqRes.text();
+        console.error("Groq API error:", groqRes.status, errText);
+        return NextResponse.json(
+          { error: "AI sedang bermasalah, coba lagi sebentar lagi." },
+          { status: 502 }
+        );
+      }
+
+      const data = await groqRes.json();
+      // `message.content` udah jawaban final — reasoning chain-nya (kalau ada)
+      // ditaruh Groq di field `reasoning` yang terpisah, jadi ga perlu di-strip.
+      const result: string | undefined = data?.choices?.[0]?.message?.content;
+
+      if (!result) {
+        return NextResponse.json(
+          { error: "AI tidak mengembalikan hasil." },
+          { status: 502 }
+        );
+      }
+
+      return NextResponse.json({ result: result.trim() });
+    } catch (err) {
+      console.error("Gagal menghubungi Groq:", err);
       return NextResponse.json(
-        { error: "AI tidak mengembalikan hasil." },
-        { status: 502 }
+        { error: "Terjadi kesalahan saat menghubungi AI." },
+        { status: 500 }
       );
     }
-
-    return NextResponse.json({ result: result.trim() });
-  } catch (err) {
-    console.error("Gagal menghubungi Groq:", err);
-    return NextResponse.json(
-      { error: "Terjadi kesalahan saat menghubungi AI." },
-      { status: 500 }
-    );
   }
-}
+);

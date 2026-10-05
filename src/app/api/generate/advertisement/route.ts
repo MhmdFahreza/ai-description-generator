@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import { withGuard } from "@/lib/api-guard";
 
 export const runtime = "nodejs";
 
@@ -14,95 +15,79 @@ const styleGuides: Record<string, string> = {
   emotional: "emosional dan personal — sentuh perasaan pembaca, bangun koneksi, ceritakan dampak nyata produk",
 };
 
-type Body = {
-  description?: string;
-  style?: string;
-};
-
-export async function POST(req: NextRequest) {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "GROQ_API_KEY belum diset di server." },
-      { status: 500 }
-    );
-  }
-
-  let body: Body;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json(
-      { error: "Body request tidak valid." },
-      { status: 400 }
-    );
-  }
-
-  const description = body.description?.trim();
-  if (!description) {
-    return NextResponse.json(
-      { error: "description wajib diisi." },
-      { status: 400 }
-    );
-  }
-
-  const styleGuide = styleGuides[body.style ?? "casual"] ?? styleGuides.casual;
-
-  try {
-    const groqRes = await fetch(GROQ_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        temperature: 0.85,
-        top_p: 0.9,
-        max_completion_tokens: 400,
-        reasoning_effort: "low",
-        messages: [
-          {
-            role: "system",
-            content:
-              "Kamu copywriter iklan Indonesia yang berpengalaman membuat teks iklan yang menarik dan konversi tinggi. " +
-              `Tulis teks iklan dalam Bahasa Indonesia dengan gaya ${styleGuide}. ` +
-              "Panjang 3-6 kalimat, fokus ke keunggulan produk/jasa, manfaat untuk konsumen, dan ajakan bertindak (CTA) yang jelas. " +
-              "Jangan pakai heading, markdown, atau bullet point — langsung teks paragraf yang siap pakai.",
-          },
-          {
-            role: "user",
-            content: `Deskripsi iklan: ${description}`,
-          },
-        ],
-      }),
-    });
-
-    if (!groqRes.ok) {
-      const errText = await groqRes.text();
-      console.error("Groq API error:", groqRes.status, errText);
+export const POST = withGuard(
+  [
+    { name: "description", required: true, freeText: true },
+    { name: "style", required: false },
+  ],
+  async (body) => {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
       return NextResponse.json(
-        { error: "AI sedang bermasalah, coba lagi sebentar lagi." },
-        { status: 502 }
+        { error: "GROQ_API_KEY belum diset di server." },
+        { status: 500 }
       );
     }
 
-    const data = await groqRes.json();
-    const result: string | undefined = data?.choices?.[0]?.message?.content;
+    const description = (body.description as string).trim();
+    const styleGuide = styleGuides[(body.style as string) ?? "casual"] ?? styleGuides.casual;
 
-    if (!result) {
+    try {
+      const groqRes = await fetch(GROQ_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          temperature: 0.85,
+          top_p: 0.9,
+          max_completion_tokens: 400,
+          reasoning_effort: "low",
+          messages: [
+            {
+              role: "system",
+              content:
+                "Kamu copywriter iklan Indonesia yang berpengalaman membuat teks iklan yang menarik dan konversi tinggi. " +
+                `Tulis teks iklan dalam Bahasa Indonesia dengan gaya ${styleGuide}. ` +
+                "Panjang 3-6 kalimat, fokus ke keunggulan produk/jasa, manfaat untuk konsumen, dan ajakan bertindak (CTA) yang jelas. " +
+                "Jangan pakai heading, markdown, atau bullet point — langsung teks paragraf yang siap pakai.",
+            },
+            {
+              role: "user",
+              content: `Deskripsi iklan: ${description}`,
+            },
+          ],
+        }),
+      });
+
+      if (!groqRes.ok) {
+        const errText = await groqRes.text();
+        console.error("Groq API error:", groqRes.status, errText);
+        return NextResponse.json(
+          { error: "AI sedang bermasalah, coba lagi sebentar lagi." },
+          { status: 502 }
+        );
+      }
+
+      const data = await groqRes.json();
+      const result: string | undefined = data?.choices?.[0]?.message?.content;
+
+      if (!result) {
+        return NextResponse.json(
+          { error: "AI tidak mengembalikan hasil." },
+          { status: 502 }
+        );
+      }
+
+      return NextResponse.json({ text: result.trim() });
+    } catch (err) {
+      console.error("Gagal menghubungi Groq:", err);
       return NextResponse.json(
-        { error: "AI tidak mengembalikan hasil." },
-        { status: 502 }
+        { error: "Terjadi kesalahan saat menghubungi AI." },
+        { status: 500 }
       );
     }
-
-    return NextResponse.json({ text: result.trim() });
-  } catch (err) {
-    console.error("Gagal menghubungi Groq:", err);
-    return NextResponse.json(
-      { error: "Terjadi kesalahan saat menghubungi AI." },
-      { status: 500 }
-    );
   }
-}
+);

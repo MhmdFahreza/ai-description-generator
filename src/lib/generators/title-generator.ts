@@ -1,6 +1,7 @@
 // src/lib/generators/title-generator.ts
 
 import { titleStyleOptions, type TitleStyle } from "@/constants/title-styles";
+import { apiFetch } from "../api-fetch";
 
 export type GenerateTitleInput = {
   style: TitleStyle;
@@ -30,7 +31,7 @@ export async function generateTitle({
 
   const styleOption = titleStyleOptions.find((s) => s.value === style);
 
-  const res = await fetch("/api/generate/title-generator", {
+  const res = await apiFetch("/api/generate/title-generator", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({

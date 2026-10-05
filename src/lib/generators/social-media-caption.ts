@@ -1,4 +1,5 @@
 import type { Platform } from "@/constants/platforms";
+import { apiFetch } from "../api-fetch";
 
 export type GenerateInput = {
   platform: Platform;
@@ -25,7 +26,7 @@ export async function generateSocialMediaCaption({
 }: GenerateInput): Promise<string> {
   void media; // belum dipakai, lihat NOTE di atas
 
-  const res = await fetch("/api/generate/social-media-caption", {
+  const res = await apiFetch("/api/generate/social-media-caption", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ platform, idea }),
