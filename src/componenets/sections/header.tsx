@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRateLimit } from "../rate-limit-provider";
 
 export default function Header() {
@@ -13,9 +14,14 @@ export default function Header() {
     <header className="sticky top-0 z-10 border-b border-white/10 bg-[#0F1115]/90 backdrop-blur">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#F2B441] font-serif text-lg italic text-[#0F1115]">
-            Ai
-          </div>
+          <Image
+            src="/logo.svg"
+            alt="AI Description Generator logo"
+            width={56}
+            height={56}
+            priority
+            className="h-12 w-12 object-contain translate-y-0.5"
+          />
           <div className="leading-tight">
             <p className="font-serif text-lg tracking-tight text-[#F5F3ED]">
               AI Description Generator
@@ -25,13 +31,13 @@ export default function Header() {
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-4">
           {remainingDaily !== null && (
             <div className="flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
               <div className="w-24 h-1.5 bg-[#0F1115] rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-[#4FB6A8] to-[#E8623D] transition-all duration-500 ease-out" 
+                <div
+                  className="h-full bg-gradient-to-r from-[#4FB6A8] to-[#E8623D] transition-all duration-500 ease-out"
                   style={{ width: `${percentage}%` }}
                 />
               </div>
