@@ -24,7 +24,10 @@ export async function generateMarketplaceDescription({
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data?.error ?? "Gagal generate deskripsi marketplace.");
+    if (res.status === 429) {
+      return "";
+    }
+    throw new Error(data?.error ?? "Failed to generate marketplace description.");
   }
 
   return data.result as string;

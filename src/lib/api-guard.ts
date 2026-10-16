@@ -71,12 +71,17 @@ export function withGuard(
 
     if (!rl.allowed) {
       const response = NextResponse.json(
-        { error: rl.message },
+        { 
+          error: rl.message,
+          reason: rl.reason,
+          retryAfter: rl.retryAfterSeconds,
+        },
         { status: 429 }
       );
 
       // Standard rate-limit headers
       response.headers.set("Retry-After", String(rl.retryAfterSeconds));
+      response.headers.set("X-RateLimit-Reason", rl.reason || "minute");
       response.headers.set("X-RateLimit-Remaining-Minute", String(rl.remainingMinute));
       response.headers.set("X-RateLimit-Remaining-Daily", String(rl.remainingDaily));
 

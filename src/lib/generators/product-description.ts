@@ -36,7 +36,12 @@ export async function generateProductDescription({
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data?.error ?? "Gagal generate deskripsi.");
+    if (res.status === 429) {
+      // Event rateLimitExceeded sudah di-dispatch oleh apiFetch.
+      // Selesaikan tanpa melempar uncaught error yang memicu error overlay dev Next.js
+      return "";
+    }
+    throw new Error(data?.error ?? "Failed to generate description.");
   }
 
   return data.result as string;

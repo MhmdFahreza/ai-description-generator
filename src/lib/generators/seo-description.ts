@@ -20,7 +20,10 @@ export async function generateSeoDescription({
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data?.error ?? "Gagal generate SEO description.");
+    if (res.status === 429) {
+      return "";
+    }
+    throw new Error(data?.error ?? "Failed to generate SEO description.");
   }
 
   return data.result as string;

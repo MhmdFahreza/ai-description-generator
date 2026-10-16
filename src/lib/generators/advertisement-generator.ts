@@ -21,7 +21,10 @@ export async function generateAdvertisement({
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data?.error ?? "Gagal generate iklan.");
+    if (res.status === 429) {
+      return "";
+    }
+    throw new Error(data?.error ?? "Failed to generate advertisement.");
   }
 
   return data.text as string;

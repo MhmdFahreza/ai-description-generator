@@ -45,7 +45,10 @@ export async function generateTitle({
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data?.error ?? "Gagal generate judul.");
+    if (res.status === 429) {
+      return [];
+    }
+    throw new Error(data?.error ?? "Failed to generate title.");
   }
 
   return data.titles as string[];

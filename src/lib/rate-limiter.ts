@@ -32,6 +32,8 @@ interface RateLimitResult {
   remainingDaily: number;
   /** Detik sampai window per-menit reset (berguna buat header Retry-After) */
   retryAfterSeconds: number;
+  /** Alasan limit tertolak jika ada: 'minute' atau 'daily' */
+  reason?: "minute" | "daily";
   /** Pesan error kalau ditolak */
   message?: string;
 }
@@ -117,7 +119,8 @@ export function rateLimit(keys: string[]): RateLimitResult {
         remainingMinute: 0,
         remainingDaily: Math.max(0, MAX_PER_DAY - check.countDaily),
         retryAfterSeconds: retryAfter,
-        message: `Terlalu banyak request. Batas: ${MAX_PER_MINUTE} generate per menit. Coba lagi dalam ${retryAfter} detik.`,
+        reason: "minute",
+        message: `Too many requests. Limit: ${MAX_PER_MINUTE} generations per minute. Please try again in ${retryAfter} seconds.`,
       };
     }
     if (check.countDaily >= MAX_PER_DAY) {
@@ -126,7 +129,8 @@ export function rateLimit(keys: string[]): RateLimitResult {
         remainingMinute: 0,
         remainingDaily: 0,
         retryAfterSeconds: 0,
-        message: `Kamu sudah mencapai batas harian (${MAX_PER_DAY} generate per hari). Coba lagi besok ya!`,
+        reason: "daily",
+        message: `You have reached your daily limit of ${MAX_PER_DAY} generations. Please come back tomorrow!`,
       };
     }
   }
@@ -191,6 +195,7 @@ export function checkRateLimit(keys: string[]): RateLimitResult {
         remainingMinute: 0,
         remainingDaily: Math.max(0, MAX_PER_DAY - check.countDaily),
         retryAfterSeconds: retryAfter,
+        reason: "minute",
       };
     }
     if (check.countDaily >= MAX_PER_DAY) {
@@ -199,6 +204,7 @@ export function checkRateLimit(keys: string[]): RateLimitResult {
         remainingMinute: 0,
         remainingDaily: 0,
         retryAfterSeconds: 0,
+        reason: "daily",
       };
     }
   }

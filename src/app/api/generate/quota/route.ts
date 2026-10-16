@@ -17,5 +17,7 @@ export async function GET(req: NextRequest) {
     remainingMinute: rl.remainingMinute,
     maxMinute: MAX_PER_MINUTE,
     allowed: rl.allowed,
+    reason: rl.reason,
+    retryAfterSeconds: rl.retryAfterSeconds,
   });
 }

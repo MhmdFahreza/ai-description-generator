@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRateLimit } from "../rate-limit-provider";
 
 export default function Header() {
-  const { remainingDaily, maxDaily } = useRateLimit();
+  const { remainingDaily, maxDaily, cooldownSeconds } = useRateLimit();
 
   const percentage = remainingDaily !== null && maxDaily > 0
     ? Math.max(0, Math.min(100, (remainingDaily / maxDaily) * 100))
@@ -33,6 +33,16 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Cooldown badge jika terkena batas menit */}
+          {cooldownSeconds > 0 && (
+            <div className="flex items-center gap-2 rounded-full border border-[#F4A261]/30 bg-[#F4A261]/10 px-3 py-1 text-xs text-[#F4A261] animate-pulse">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#F4A261]" />
+              <span className="font-mono text-[11px] font-medium">
+                Cooldown: {cooldownSeconds}s
+              </span>
+            </div>
+          )}
+
           {remainingDaily !== null && (
             <div className="flex items-center gap-3 bg-white/5 px-3 py-1.5 rounded-full border border-white/10">
               <div className="w-24 h-1.5 bg-[#0F1115] rounded-full overflow-hidden">

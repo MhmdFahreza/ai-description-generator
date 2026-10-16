@@ -35,7 +35,10 @@ export async function generateSocialMediaCaption({
   const data = await res.json();
 
   if (!res.ok) {
-    throw new Error(data?.error ?? "Gagal generate caption.");
+    if (res.status === 429) {
+      return "";
+    }
+    throw new Error(data?.error ?? "Failed to generate caption.");
   }
 
   return data.result as string;
