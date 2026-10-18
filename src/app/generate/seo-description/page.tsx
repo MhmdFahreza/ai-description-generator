@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Header from "@/componenets/sections/header";
 import {
@@ -14,9 +14,17 @@ import {
 } from "@/componenets/icons";
 import { toneOptions } from "@/constants/tones";
 import { generateSeoDescription } from "@/lib/generators/seo-description";
+import { ssGet, ssSet } from "@/lib/session-storage";
 
 const CORAL = "#E8623D";
 const META_LIMIT = 160;
+const SS_KEY = "seo-description-form";
+
+interface FormState {
+  concept: string;
+  tone: string;
+  result: string | null;
+}
 
 export default function SeoDescriptionPage() {
   const [concept, setConcept] = useState("");
@@ -25,6 +33,20 @@ export default function SeoDescriptionPage() {
   const [result, setResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Restore from sessionStorage on mount
+  useEffect(() => {
+    const saved = ssGet<FormState>(SS_KEY);
+    if (!saved) return;
+    if (saved.concept) setConcept(saved.concept);
+    if (saved.tone) setTone(saved.tone);
+    if (saved.result) setResult(saved.result);
+  }, []);
+
+  // Persist whenever state changes
+  useEffect(() => {
+    ssSet<FormState>(SS_KEY, { concept, tone, result });
+  }, [concept, tone, result]);
 
   const canGenerate = concept.trim().length > 0 && !isLoading;
 

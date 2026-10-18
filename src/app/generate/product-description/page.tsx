@@ -17,8 +17,20 @@ import {
 import { toneOptions } from "@/constants/tones";
 import { generateProductDescription } from "@/lib/generators/product-description";
 import { validateImageFile, formatBytes } from "@/lib/image";
+import { ssGet, ssSet } from "@/lib/session-storage";
+import { idbGetFile, idbSetFile, idbRemoveFile } from "@/lib/indexed-db";
 
 const AMBER = "#F2B441";
+const SS_KEY = "product-description-form";
+const IDB_KEY = "product-description-image";
+
+interface FormState {
+  productName: string;
+  idea: string;
+  tone: string;
+  result: string | null;
+  hasImage: boolean; // flag so we know to check IndexedDB
+}
 
 export default function ProductDescriptionPage() {
   const [productName, setProductName] = useState("");
@@ -35,6 +47,38 @@ export default function ProductDescriptionPage() {
   const [result, setResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Restore text form fields + result from sessionStorage on mount.
+  // Also restore image from IndexedDB if the flag is set.
+  useEffect(() => {
+    const saved = ssGet<FormState>(SS_KEY);
+    if (saved) {
+      if (saved.productName) setProductName(saved.productName);
+      if (saved.idea) setIdea(saved.idea);
+      if (saved.tone) setTone(saved.tone);
+      if (saved.result) setResult(saved.result);
+
+      if (saved.hasImage) {
+        idbGetFile(IDB_KEY).then((file) => {
+          if (file) {
+            setProductImage(file);
+            setImagePreviewUrl(URL.createObjectURL(file));
+          }
+        });
+      }
+    }
+  }, []);
+
+  // Persist text fields + result to sessionStorage whenever they change.
+  useEffect(() => {
+    ssSet<FormState>(SS_KEY, {
+      productName,
+      idea,
+      tone,
+      result,
+      hasImage: productImage !== null,
+    });
+  }, [productName, idea, tone, result, productImage]);
 
   // Clean up object URL on unmount to prevent memory leaks.
   useEffect(() => {
@@ -63,6 +107,8 @@ export default function ProductDescriptionPage() {
       if (prev) URL.revokeObjectURL(prev);
       return URL.createObjectURL(file);
     });
+    // Persist image to IndexedDB
+    idbSetFile(IDB_KEY, file);
   }
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -111,6 +157,8 @@ export default function ProductDescriptionPage() {
     setImagePreviewUrl(null);
     setImageError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    // Remove from IndexedDB
+    idbRemoveFile(IDB_KEY);
   }
 
   async function handleGenerate() {

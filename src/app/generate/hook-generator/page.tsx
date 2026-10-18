@@ -16,8 +16,18 @@ import {
 import { hookStyleOptions, type HookStyle } from "@/constants/hook-styles";
 import { hookPlatformOptions, type HookPlatform } from "@/constants/hook-platforms";
 import { generateHook } from "@/lib/generators/hook-generator";
+import { ssGet, ssSet } from "@/lib/session-storage";
 
 const CORAL = "#E8623D";
+const SS_KEY = "hook-generator-form";
+
+interface FormState {
+  topic: string;
+  description: string;
+  platform: HookPlatform;
+  style: HookStyle | null;
+  hooks: string[] | null;
+}
 
 function IconHook({ className }: { className?: string }) {
   return (
@@ -52,6 +62,22 @@ export default function HookGeneratorPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
+
+  // Restore from sessionStorage on mount
+  useEffect(() => {
+    const saved = ssGet<FormState>(SS_KEY);
+    if (!saved) return;
+    if (saved.topic) setTopic(saved.topic);
+    if (saved.description) setDescription(saved.description);
+    if (saved.platform) setPlatform(saved.platform);
+    if (saved.style) setStyle(saved.style);
+    if (saved.hooks) setHooks(saved.hooks);
+  }, []);
+
+  // Persist whenever state changes
+  useEffect(() => {
+    ssSet<FormState>(SS_KEY, { topic, description, platform, style, hooks });
+  }, [topic, description, platform, style, hooks]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Header from "@/componenets/sections/header";
 import {
@@ -15,8 +15,18 @@ import {
 import { toneOptions } from "@/constants/tones";
 import { businessTypeOptions, businessModelOptions } from "@/constants/business";
 import { generateMarketplaceDescription } from "@/lib/generators/marketplace-description";
+import { ssGet, ssSet } from "@/lib/session-storage";
 
 const TEAL = "#4FB6A8";
+const SS_KEY = "marketplace-description-form";
+
+interface FormState {
+  concept: string;
+  businessType: string;
+  tone: string;
+  businessModel: string;
+  result: string | null;
+}
 
 export default function MarketplaceDescriptionPage() {
   const [concept, setConcept] = useState("");
@@ -27,6 +37,22 @@ export default function MarketplaceDescriptionPage() {
   const [result, setResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Restore form + result from sessionStorage on mount
+  useEffect(() => {
+    const saved = ssGet<FormState>(SS_KEY);
+    if (!saved) return;
+    if (saved.concept) setConcept(saved.concept);
+    if (saved.businessType) setBusinessType(saved.businessType);
+    if (saved.tone) setTone(saved.tone);
+    if (saved.businessModel) setBusinessModel(saved.businessModel);
+    if (saved.result) setResult(saved.result);
+  }, []);
+
+  // Persist form + result to sessionStorage whenever they change
+  useEffect(() => {
+    ssSet<FormState>(SS_KEY, { concept, businessType, tone, businessModel, result });
+  }, [concept, businessType, tone, businessModel, result]);
 
   const canGenerate = concept.trim().length > 0 && !isLoading;
 

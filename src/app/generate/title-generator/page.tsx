@@ -18,8 +18,19 @@ import {
 import { titleStyleOptions, type TitleStyle } from "@/constants/title-styles";
 import { generateTitle } from "@/lib/generators/title-generator";
 import { formatBytes, getMediaKind } from "@/lib/media";
+import { ssGet, ssSet } from "@/lib/session-storage";
+import { idbGetFile, idbSetFile, idbRemoveFile } from "@/lib/indexed-db";
 
 const CORAL = "#E8623D";
+const SS_KEY = "title-generator-form";
+const IDB_KEY = "title-generator-media";
+
+interface FormState {
+  description: string;
+  style: TitleStyle | null;
+  titles: string[] | null;
+  hasMedia: boolean;
+}
 
 function IconType({ className }: { className?: string }) {
   return (
@@ -54,6 +65,30 @@ export default function TitleGeneratorPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
+
+  // Restore text fields + titles from sessionStorage; media from IndexedDB
+  useEffect(() => {
+    const saved = ssGet<FormState>(SS_KEY);
+    if (saved) {
+      if (saved.description) setDescription(saved.description);
+      if (saved.style) setStyle(saved.style);
+      if (saved.titles) setTitles(saved.titles);
+
+      if (saved.hasMedia) {
+        idbGetFile(IDB_KEY).then((file) => {
+          if (file) {
+            setMedia(file);
+            setMediaPreviewUrl(URL.createObjectURL(file));
+          }
+        });
+      }
+    }
+  }, []);
+
+  // Persist to sessionStorage whenever state changes
+  useEffect(() => {
+    ssSet<FormState>(SS_KEY, { description, style, titles, hasMedia: media !== null });
+  }, [description, style, titles, media]);
 
   // Close style dropdown on outside click or Escape
   useEffect(() => {
@@ -99,6 +134,8 @@ export default function TitleGeneratorPage() {
       if (prev) URL.revokeObjectURL(prev);
       return URL.createObjectURL(file);
     });
+    // Persist media to IndexedDB
+    idbSetFile(IDB_KEY, file);
   }
 
   function handleMediaChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -147,6 +184,8 @@ export default function TitleGeneratorPage() {
     setMediaPreviewUrl(null);
     setMediaError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    // Remove from IndexedDB
+    idbRemoveFile(IDB_KEY);
   }
 
   async function handleGenerate() {

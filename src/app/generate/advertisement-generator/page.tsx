@@ -14,8 +14,16 @@ import {
 } from "@/componenets/icons";
 import { adStyleOptions, type AdStyle } from "@/constants/ad-styles";
 import { generateAdvertisement } from "@/lib/generators/advertisement-generator";
+import { ssGet, ssSet } from "@/lib/session-storage";
 
 const CORAL = "#E8623D";
+const SS_KEY = "advertisement-generator-form";
+
+interface FormState {
+  description: string;
+  style: AdStyle | null;
+  result: string | null;
+}
 
 // Placeholder header icon — swap for a real icon (e.g. IconMegaphone)
 // from your icon set if you have one.
@@ -62,6 +70,20 @@ export default function AdvertisementGeneratorPage() {
   const [result, setResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Restore from sessionStorage on mount
+  useEffect(() => {
+    const saved = ssGet<FormState>(SS_KEY);
+    if (!saved) return;
+    if (saved.description) setDescription(saved.description);
+    if (saved.style) setStyle(saved.style);
+    if (saved.result) setResult(saved.result);
+  }, []);
+
+  // Persist whenever state changes
+  useEffect(() => {
+    ssSet<FormState>(SS_KEY, { description, style, result });
+  }, [description, style, result]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {

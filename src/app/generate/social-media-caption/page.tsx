@@ -17,8 +17,19 @@ import {
 import { platformOptions } from "@/constants/platforms";
 import { generateSocialMediaCaption } from "@/lib/generators/social-media-caption";
 import { validateMediaFile, formatBytes, getMediaKind } from "@/lib/media";
+import { ssGet, ssSet } from "@/lib/session-storage";
+import { idbGetFile, idbSetFile, idbRemoveFile } from "@/lib/indexed-db";
 
 const CORAL = "#E8623D";
+const SS_KEY = "social-media-caption-form";
+const IDB_KEY = "social-media-caption-media";
+
+interface FormState {
+  platform: string | null;
+  idea: string;
+  result: string | null;
+  hasMedia: boolean;
+}
 
 // Small inline chevron so we don't depend on an icon that may not exist yet
 function IconChevronDown({ className }: { className?: string }) {
@@ -54,6 +65,30 @@ export default function SocialMediaCaptionPage() {
   const [result, setResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Restore text fields + result from sessionStorage; media from IndexedDB
+  useEffect(() => {
+    const saved = ssGet<FormState>(SS_KEY);
+    if (saved) {
+      if (saved.platform) setPlatform(saved.platform);
+      if (saved.idea) setIdea(saved.idea);
+      if (saved.result) setResult(saved.result);
+
+      if (saved.hasMedia) {
+        idbGetFile(IDB_KEY).then((file) => {
+          if (file) {
+            setMedia(file);
+            setMediaPreviewUrl(URL.createObjectURL(file));
+          }
+        });
+      }
+    }
+  }, []);
+
+  // Persist to sessionStorage whenever relevant state changes
+  useEffect(() => {
+    ssSet<FormState>(SS_KEY, { platform, idea, result, hasMedia: media !== null });
+  }, [platform, idea, result, media]);
 
   useEffect(() => {
     return () => {
@@ -96,6 +131,8 @@ export default function SocialMediaCaptionPage() {
       if (prev) URL.revokeObjectURL(prev);
       return URL.createObjectURL(file);
     });
+    // Persist media to IndexedDB
+    idbSetFile(IDB_KEY, file);
   }
 
   function handleMediaChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -144,6 +181,8 @@ export default function SocialMediaCaptionPage() {
     setMediaPreviewUrl(null);
     setMediaError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+    // Remove from IndexedDB
+    idbRemoveFile(IDB_KEY);
   }
 
   async function handleGenerate() {
