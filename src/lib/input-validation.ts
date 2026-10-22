@@ -242,12 +242,29 @@ export function validateContentType(req: NextRequest): NextResponse | null {
   return null;
 }
 
+export const MAX_BODY_SIZE_BYTES = 50 * 1024; // 50 KB
+
 /**
- * Parse body JSON dengan error handling.
+ * Parse body JSON dengan error handling dan proteksi ukuran payload.
  */
 export async function parseBody(
   req: NextRequest
 ): Promise<Record<string, unknown> | NextResponse> {
+  const contentLength = req.headers.get("content-length");
+  if (contentLength) {
+    const size = parseInt(contentLength, 10);
+    if (!isNaN(size) && size > MAX_BODY_SIZE_BYTES) {
+      return NextResponse.json(
+        {
+          error: `Ukuran request terlalu besar (maksimal ${
+            MAX_BODY_SIZE_BYTES / 1024
+          }KB).`,
+        },
+        { status: 413 }
+      );
+    }
+  }
+
   try {
     const body = await req.json();
     if (typeof body !== "object" || body === null || Array.isArray(body)) {

@@ -16,7 +16,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { rateLimit, MAX_PER_DAY } from "./rate-limiter";
+import { rateLimit, refundQuota, MAX_PER_DAY } from "./rate-limiter";
 import {
   getOrCreateVisitorIdentity,
   attachVisitorCookie,
@@ -38,11 +38,54 @@ type RouteHandler = (
 ) => Promise<NextResponse>;
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Validasi header Origin untuk mencegah serangan CSRF / cross-site abuse.
+ */
+function validateOrigin(req: NextRequest): NextResponse | null {
+  const origin = req.headers.get("origin");
+  if (!origin) return null; // Request server-to-server / non-browser tanpa Origin header
+
+  const host = req.headers.get("host");
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+
+  try {
+    const originHost = new URL(origin).host;
+    if (host && originHost === host) return null;
+    if (appUrl && originHost === new URL(appUrl).host) return null;
+    if (
+      process.env.NODE_ENV !== "production" &&
+      (originHost.startsWith("localhost") || originHost.startsWith("127.0.0.1"))
+    ) {
+      return null;
+    }
+  } catch {
+    return NextResponse.json(
+      { error: "Format origin request tidak valid." },
+      { status: 400 }
+    );
+  }
+
+  return NextResponse.json(
+    { error: "Permintaan lintas domain (cross-origin) tidak diizinkan." },
+    { status: 403 }
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Guard wrapper
 // ---------------------------------------------------------------------------
 
 export function withGuard(schema: FieldSchema[], handler: RouteHandler) {
   return async function guardedRoute(req: NextRequest): Promise<NextResponse> {
+    // -----------------------------------------------------------------------
+    // 0. Origin / CSRF check
+    // -----------------------------------------------------------------------
+    const originError = validateOrigin(req);
+    if (originError) return originError;
+
     // -----------------------------------------------------------------------
     // 1. Content-Type check
     // -----------------------------------------------------------------------
@@ -50,7 +93,7 @@ export function withGuard(schema: FieldSchema[], handler: RouteHandler) {
     if (ctError) return ctError;
 
     // -----------------------------------------------------------------------
-    // 2. Parse body
+    // 2. Parse body (termasuk batas ukuran 50KB)
     // -----------------------------------------------------------------------
     const bodyOrError = await parseBody(req);
     if (bodyOrError instanceof NextResponse) return bodyOrError;
@@ -65,7 +108,7 @@ export function withGuard(schema: FieldSchema[], handler: RouteHandler) {
     if (validationError) return validationError;
 
     // -----------------------------------------------------------------------
-    // 4. Server-managed anonymous identity (HttpOnly cookie + IP)
+    // 4. Server-managed anonymous identity (HttpOnly cookie bertanda tangan + IP)
     // -----------------------------------------------------------------------
     const identity = getOrCreateVisitorIdentity(req);
 
@@ -131,9 +174,33 @@ export function withGuard(schema: FieldSchema[], handler: RouteHandler) {
     }
 
     // -----------------------------------------------------------------------
-    // 6. Execute route handler (Proses AI)
+    // 6. Execute route handler (Proses AI) dengan auto-refund jika gagal
     // -----------------------------------------------------------------------
-    const response = await handler(body, req);
+    let response: NextResponse;
+    try {
+      response = await handler(body, req);
+    } catch (handlerErr) {
+      // Rollback kuota jika handler mengalami exception tak terduga
+      await refundQuota(identity.visitorId);
+      console.error(
+        "[api-guard] Unhandled exception pada route handler:",
+        handlerErr instanceof Error ? handlerErr.message : "unknown"
+      );
+      return NextResponse.json(
+        {
+          error:
+            "Terjadi kesalahan internal saat menghubungi AI. Kuota Anda tidak terpotong.",
+        },
+        { status: 500 }
+      );
+    }
+
+    // Jika AI handler mengembalikan status 5xx (AI error / timeout / outage), kembalikan kuota
+    let effectiveRemainingDaily = rl.remainingDaily;
+    if (response.status >= 500) {
+      await refundQuota(identity.visitorId);
+      effectiveRemainingDaily = Math.min(MAX_PER_DAY, rl.remainingDaily + 1);
+    }
 
     // -----------------------------------------------------------------------
     // 7. Attach rate-limit headers & anonymous identity cookie
@@ -145,7 +212,7 @@ export function withGuard(schema: FieldSchema[], handler: RouteHandler) {
     );
     response.headers.set(
       "X-RateLimit-Remaining-Daily",
-      String(rl.remainingDaily)
+      String(effectiveRemainingDaily)
     );
     if (rl.resetAt) {
       response.headers.set("X-RateLimit-Reset", String(rl.resetAt));

@@ -508,6 +508,30 @@ export async function checkQuota(
 }
 
 /**
+ * Refund / rollback 1 penggunaan kuota harian visitor jika proses AI gagal.
+ */
+export async function refundQuota(visitorId: string): Promise<void> {
+  const limiters = await getRedisLimiters();
+  if (limiters) {
+    try {
+      await limiters.daily.limit(`visitor:${visitorId}`, { rate: -1 });
+    } catch (err) {
+      console.error(
+        "[rate-limiter] Gagal refund kuota di Redis:",
+        err instanceof Error ? err.message : "unknown error"
+      );
+    }
+  } else {
+    // Memory fallback rollback
+    const dailyKey = `daily:${visitorId}`;
+    const entry = memoryStore.get(dailyKey);
+    if (entry && entry.timestamps.length > 0) {
+      entry.timestamps.pop();
+    }
+  }
+}
+
+/**
  * Apakah Upstash Redis sudah dikonfigurasi.
  */
 export function isRedisConfigured(): boolean {

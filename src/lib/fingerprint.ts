@@ -71,30 +71,41 @@ export async function computeFingerprint(req: NextRequest): Promise<string> {
   return sha256(raw);
 }
 
+function isValidIp(ip: string): boolean {
+  const ipv4Regex = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
+  const ipv6Regex = /^[0-9a-fA-F:]+$/;
+  return (ipv4Regex.test(ip) || ipv6Regex.test(ip)) && ip.length <= 45;
+}
+
 /**
- * Ekstrak IP address dari request.
+ * Ekstrak IP address dari request secara aman.
  *
  * Priority:
- *   1. x-forwarded-for (dari reverse proxy / Vercel / Cloudflare)
- *   2. x-real-ip
- *   3. NextRequest.ip (Vercel Edge)
- *   4. Fallback "unknown"
+ *   1. cf-connecting-ip (Cloudflare - tidak bisa di-spoof jika di balik CF)
+ *   2. x-vercel-forwarded-for (Vercel)
+ *   3. x-real-ip (Nginx/standard reverse proxy)
+ *   4. NextRequest.ip (Edge/Node internal)
+ *   5. x-forwarded-for (ambil IP paling kiri, divalidasi)
+ *   6. Fallback "unknown-ip"
  */
 export function extractIP(req: NextRequest): string {
-  // x-forwarded-for bisa berisi chain: "client, proxy1, proxy2"
+  const cfIp = req.headers.get("cf-connecting-ip")?.trim();
+  if (cfIp && isValidIp(cfIp)) return cfIp;
+
+  const vercelIp = req.headers.get("x-vercel-forwarded-for")?.split(",")[0].trim();
+  if (vercelIp && isValidIp(vercelIp)) return vercelIp;
+
+  const realIp = req.headers.get("x-real-ip")?.trim();
+  if (realIp && isValidIp(realIp)) return realIp;
+
+  const edgeIp = (req as unknown as { ip?: string }).ip?.trim();
+  if (edgeIp && isValidIp(edgeIp)) return edgeIp;
+
   const forwarded = req.headers.get("x-forwarded-for");
   if (forwarded) {
     const firstIp = forwarded.split(",")[0].trim();
-    if (firstIp) return firstIp;
+    if (firstIp && isValidIp(firstIp)) return firstIp;
   }
-
-  const realIp = req.headers.get("x-real-ip");
-  if (realIp) return realIp.trim();
-
-  // NextRequest.ip ada di Vercel Edge Runtime tapi gak selalu ada di type
-  // definitions — pakai optional chaining di cast supaya aman.
-  const edgeIp = (req as unknown as { ip?: string }).ip;
-  if (edgeIp) return edgeIp;
 
   return "unknown-ip";
 }
