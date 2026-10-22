@@ -12,8 +12,13 @@ interface RateLimitContextType {
   maxMinute: number;
   cooldownSeconds: number;
   isCooldown: boolean;
-  updateQuota: (daily: number, minute: number) => void;
-  showLimitModal: (reason?: LimitReason, retryAfterSeconds?: number) => void;
+  resetAt: number | null;
+  updateQuota: (daily: number, minute: number, resetAt?: number | null) => void;
+  showLimitModal: (
+    reason?: LimitReason,
+    retryAfterSeconds?: number,
+    resetAt?: number | null
+  ) => void;
 }
 
 const RateLimitContext = createContext<RateLimitContextType>({
@@ -23,6 +28,7 @@ const RateLimitContext = createContext<RateLimitContextType>({
   maxMinute: 5,
   cooldownSeconds: 0,
   isCooldown: false,
+  resetAt: null,
   updateQuota: () => {},
   showLimitModal: () => {},
 });
@@ -34,7 +40,8 @@ export function RateLimitProvider({ children }: { children: React.ReactNode }) {
   const [remainingMinute, setRemainingMinute] = useState<number | null>(null);
   const [maxDaily, setMaxDaily] = useState(10);
   const [maxMinute, setMaxMinute] = useState(5);
-  
+  const [resetAt, setResetAt] = useState<number | null>(null);
+
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalReason, setModalReason] = useState<LimitReason>("daily");
@@ -59,15 +66,18 @@ export function RateLimitProvider({ children }: { children: React.ReactNode }) {
   }, [cooldownSeconds]);
 
   useEffect(() => {
-    // Fetch initial quota
-    fetch("/api/generate/quota")
+    // Fetch initial quota dari server (selalu ambil yang terbaru)
+    fetch("/api/generate/quota", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => {
         if (data.remainingDaily !== undefined) {
           setRemainingDaily(data.remainingDaily);
-          setMaxDaily(data.maxDaily);
-          setRemainingMinute(data.remainingMinute);
-          setMaxMinute(data.maxMinute);
+          setMaxDaily(data.maxDaily ?? 10);
+          setRemainingMinute(data.remainingMinute ?? 5);
+          setMaxMinute(data.maxMinute ?? 5);
+          if (data.resetAt) {
+            setResetAt(data.resetAt);
+          }
           if (data.reason === "minute" && data.retryAfterSeconds > 0) {
             setCooldownSeconds(data.retryAfterSeconds);
           }
@@ -84,12 +94,16 @@ export function RateLimitProvider({ children }: { children: React.ReactNode }) {
       if (detail && typeof detail.remainingMinute === "number") {
         setRemainingMinute(detail.remainingMinute);
       }
+      if (detail && typeof detail.resetAt === "number") {
+        setResetAt(detail.resetAt);
+      }
     };
 
     const handleLimitExceeded = (e: Event) => {
       const detail = (e as CustomEvent).detail as {
         reason?: LimitReason;
         retryAfterSeconds?: number;
+        resetAt?: number;
       } | undefined;
 
       const reason = detail?.reason === "daily" ? "daily" : "minute";
@@ -100,6 +114,10 @@ export function RateLimitProvider({ children }: { children: React.ReactNode }) {
       } else {
         setRemainingMinute(0);
         setCooldownSeconds(retryAfter);
+      }
+
+      if (detail?.resetAt) {
+        setResetAt(detail.resetAt);
       }
 
       setModalReason(reason);
@@ -115,20 +133,42 @@ export function RateLimitProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const updateQuota = (daily: number, minute: number) => {
+  const updateQuota = (
+    daily: number,
+    minute: number,
+    newResetAt?: number | null
+  ) => {
     setRemainingDaily(daily);
     setRemainingMinute(minute);
+    if (newResetAt !== undefined) {
+      setResetAt(newResetAt);
+    }
   };
 
-  const showLimitModal = (reason: LimitReason = "daily", retryAfterSeconds = 60) => {
+  const showLimitModal = (
+    reason: LimitReason = "daily",
+    retryAfterSeconds = 60,
+    newResetAt?: number | null
+  ) => {
     setModalReason(reason);
     if (reason === "minute") {
       setCooldownSeconds(retryAfterSeconds);
+    }
+    if (newResetAt) {
+      setResetAt(newResetAt);
     }
     setIsModalOpen(true);
   };
 
   const isCooldown = cooldownSeconds > 0;
+
+  // Format waktu reset yang mudah dipahami
+  const formattedResetTime = resetAt
+    ? new Date(resetAt).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
 
   return (
     <RateLimitContext.Provider
@@ -139,12 +179,13 @@ export function RateLimitProvider({ children }: { children: React.ReactNode }) {
         maxMinute,
         cooldownSeconds,
         isCooldown,
+        resetAt,
         updateQuota,
         showLimitModal,
       }}
     >
       {children}
-      
+
       {/* Limit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-md animate-in fade-in duration-200">
@@ -173,7 +214,11 @@ export function RateLimitProvider({ children }: { children: React.ReactNode }) {
                 </h3>
 
                 <p className="mb-5 text-sm leading-relaxed text-[#9A9CA5]">
-                  To protect AI server stability, the limit is <strong className="text-[#F5F3ED] font-semibold">{maxMinute} requests per minute</strong>. Please wait for the cooldown to finish.
+                  To protect AI server stability, the limit is{" "}
+                  <strong className="text-[#F5F3ED] font-semibold">
+                    {maxMinute} requests per minute
+                  </strong>
+                  . Please wait for the cooldown to finish.
                 </p>
 
                 {/* Box Cooldown Timer */}
@@ -185,7 +230,9 @@ export function RateLimitProvider({ children }: { children: React.ReactNode }) {
                     <span className="font-mono text-3xl font-bold tracking-tight">
                       {cooldownSeconds > 0 ? cooldownSeconds : 0}
                     </span>
-                    <span className="text-sm font-mono text-[#9A9CA5]">seconds</span>
+                    <span className="text-sm font-mono text-[#9A9CA5]">
+                      seconds
+                    </span>
                   </div>
                 </div>
 
@@ -205,9 +252,23 @@ export function RateLimitProvider({ children }: { children: React.ReactNode }) {
                 <h3 className="mb-2 font-serif text-xl text-[#F5F3ED]">
                   Daily Limit Reached
                 </h3>
-                <p className="mb-6 text-sm leading-relaxed text-[#9A9CA5]">
-                  You have reached your daily limit of {maxDaily} generations. Please come back tomorrow for more free generations!
+                <p className="mb-4 text-sm leading-relaxed text-[#9A9CA5]">
+                  You have reached your daily limit of {maxDaily} generations
+                  across all tools.
                 </p>
+
+                {formattedResetTime && (
+                  <div className="mb-6 rounded-xl border border-white/10 bg-black/30 p-3 text-xs text-[#9A9CA5]">
+                    <span className="block font-mono uppercase tracking-wider text-[10px] text-[#E8623D]">
+                      Rolling 24-Hour Reset
+                    </span>
+                    <span className="mt-1 block text-sm font-medium text-[#F5F3ED]">
+                      Quota begins resetting around{" "}
+                      <span className="text-[#E8623D]">{formattedResetTime}</span>
+                    </span>
+                  </div>
+                )}
+
                 <button
                   onClick={() => setIsModalOpen(false)}
                   className="w-full rounded-lg bg-[#E8623D] py-3 text-sm font-medium text-[#0F1115] transition-opacity hover:opacity-90"
