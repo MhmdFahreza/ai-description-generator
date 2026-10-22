@@ -16,9 +16,10 @@ import { adStyleOptions, type AdStyle } from "@/constants/ad-styles";
 import { generateAdvertisement } from "@/lib/generators/advertisement-generator";
 import { ssGet, ssSet } from "@/lib/session-storage";
 
-const CORAL = "#E8623D";
 import type { OutputLanguage } from "@/constants/languages";
 import { LanguageSelect } from "@/componenets/language-select";
+import { useGeneratorAnalytics } from "@/hooks/use-generator-analytics";
+import { CORAL } from "@/constants/colors";
 
 const SS_KEY = "advertisement-generator-form";
 
@@ -65,6 +66,7 @@ function IconChevronDown({ className }: { className?: string }) {
 }
 
 export default function AdvertisementGeneratorPage() {
+  const analytics = useGeneratorAnalytics("advertisement");
   const [description, setDescription] = useState("");
   const [outputLanguage, setOutputLanguage] = useState<OutputLanguage>("auto");
 
@@ -115,13 +117,20 @@ export default function AdvertisementGeneratorPage() {
     if (!canGenerate || !style) return;
     setIsLoading(true);
     setCopied(false);
+    analytics.onAttempt(outputLanguage);
+    const startMs = Date.now();
     try {
       const text = await generateAdvertisement({
         description,
         style,
         outputLanguage,
       });
-      setResult(text);
+      if (text) {
+        setResult(text);
+        analytics.onSuccess(outputLanguage, Date.now() - startMs);
+      }
+    } catch {
+      analytics.onError("provider_error");
     } finally {
       setIsLoading(false);
     }
@@ -131,6 +140,7 @@ export default function AdvertisementGeneratorPage() {
     if (!result) return;
     await navigator.clipboard.writeText(result);
     setCopied(true);
+    analytics.onCopy();
     setTimeout(() => setCopied(false), 1800);
   }
 
@@ -269,7 +279,8 @@ export default function AdvertisementGeneratorPage() {
               <LanguageSelect
                 value={outputLanguage}
                 onChange={setOutputLanguage}
-                accentColor={CORAL}
+                accentColor="#E8623D"
+                generatorId="advertisement"
               />
 
               <button

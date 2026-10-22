@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { IconSparkle, IconClock, IconX } from "@/componenets/icons";
+import { trackQuotaExhausted } from "@/lib/analytics";
 
 type LimitReason = "minute" | "daily";
 
@@ -122,6 +123,7 @@ export function RateLimitProvider({ children }: { children: React.ReactNode }) {
 
       setModalReason(reason);
       setIsModalOpen(true);
+      trackQuotaExhausted(reason);
     };
 
     window.addEventListener("rateLimitUpdated", handleQuotaUpdate);

@@ -21,6 +21,7 @@ import { generateSocialMediaCaption } from "@/lib/generators/social-media-captio
 import { validateMediaFile, formatBytes, getMediaKind } from "@/lib/media";
 import { ssGet, ssSet } from "@/lib/session-storage";
 import { idbGetFile, idbSetFile, idbRemoveFile } from "@/lib/indexed-db";
+import { useGeneratorAnalytics } from "@/hooks/use-generator-analytics";
 
 const CORAL = "#E8623D";
 const SS_KEY = "social-media-caption-form";
@@ -52,6 +53,7 @@ function IconChevronDown({ className }: { className?: string }) {
 }
 
 export default function SocialMediaCaptionPage() {
+  const analytics = useGeneratorAnalytics("social-media-caption");
   const [media, setMedia] = useState<File | null>(null);
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
   const [mediaError, setMediaError] = useState<string | null>(null);
@@ -194,6 +196,8 @@ export default function SocialMediaCaptionPage() {
     if (!canGenerate || !platform) return;
     setIsLoading(true);
     setCopied(false);
+    analytics.onAttempt(outputLanguage);
+    const startMs = Date.now();
     try {
       const text = await generateSocialMediaCaption({
         platform: platform as (typeof platformOptions)[number]["value"],
@@ -201,7 +205,12 @@ export default function SocialMediaCaptionPage() {
         outputLanguage,
         media,
       });
-      setResult(text);
+      if (text) {
+        setResult(text);
+        analytics.onSuccess(outputLanguage, Date.now() - startMs);
+      }
+    } catch {
+      analytics.onError("provider_error");
     } finally {
       setIsLoading(false);
     }
@@ -211,6 +220,7 @@ export default function SocialMediaCaptionPage() {
     if (!result) return;
     await navigator.clipboard.writeText(result);
     setCopied(true);
+    analytics.onCopy();
     setTimeout(() => setCopied(false), 1800);
   }
 
@@ -442,6 +452,7 @@ export default function SocialMediaCaptionPage() {
                 value={outputLanguage}
                 onChange={setOutputLanguage}
                 accentColor={CORAL}
+                generatorId="social-media-caption"
               />
 
               <button

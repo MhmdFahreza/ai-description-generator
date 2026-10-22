@@ -22,6 +22,7 @@ import { idbGetFile, idbSetFile, idbRemoveFile } from "@/lib/indexed-db";
 
 import type { OutputLanguage } from "@/constants/languages";
 import { LanguageSelect } from "@/componenets/language-select";
+import { useGeneratorAnalytics } from "@/hooks/use-generator-analytics";
 
 const AMBER = "#F2B441";
 const SS_KEY = "product-description-form";
@@ -37,6 +38,7 @@ interface FormState {
 }
 
 export default function ProductDescriptionPage() {
+  const analytics = useGeneratorAnalytics("product-description");
   const [productName, setProductName] = useState("");
   const [idea, setIdea] = useState("");
   const [tone, setTone] = useState(toneOptions[0].value);
@@ -172,6 +174,8 @@ export default function ProductDescriptionPage() {
     if (!canGenerate) return;
     setIsLoading(true);
     setCopied(false);
+    analytics.onAttempt(outputLanguage);
+    const startMs = Date.now();
     try {
       const text = await generateProductDescription({
         productName,
@@ -180,7 +184,12 @@ export default function ProductDescriptionPage() {
         outputLanguage,
         image: productImage,
       });
-      setResult(text);
+      if (text) {
+        setResult(text);
+        analytics.onSuccess(outputLanguage, Date.now() - startMs);
+      }
+    } catch {
+      analytics.onError("provider_error");
     } finally {
       setIsLoading(false);
     }
@@ -190,6 +199,7 @@ export default function ProductDescriptionPage() {
     if (!result) return;
     await navigator.clipboard.writeText(result);
     setCopied(true);
+    analytics.onCopy();
     setTimeout(() => setCopied(false), 1800);
   }
 
@@ -375,6 +385,7 @@ export default function ProductDescriptionPage() {
                 value={outputLanguage}
                 onChange={setOutputLanguage}
                 accentColor={AMBER}
+                generatorId="product-description"
               />
 
               <button

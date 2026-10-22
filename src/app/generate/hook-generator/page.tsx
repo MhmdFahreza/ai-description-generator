@@ -20,6 +20,7 @@ import { ssGet, ssSet } from "@/lib/session-storage";
 
 import type { OutputLanguage } from "@/constants/languages";
 import { LanguageSelect } from "@/componenets/language-select";
+import { useGeneratorAnalytics } from "@/hooks/use-generator-analytics";
 
 const CORAL = "#E8623D";
 const SS_KEY = "hook-generator-form";
@@ -51,6 +52,7 @@ function IconHook({ className }: { className?: string }) {
 }
 
 export default function HookGeneratorPage() {
+  const analytics = useGeneratorAnalytics("hook");
   const [topic, setTopic] = useState("");
   const [description, setDescription] = useState("");
   const [outputLanguage, setOutputLanguage] = useState<OutputLanguage>("auto");
@@ -126,6 +128,8 @@ export default function HookGeneratorPage() {
     setIsLoading(true);
     setCopiedAll(false);
     setCopiedIndex(null);
+    analytics.onAttempt(outputLanguage);
+    const startMs = Date.now();
     try {
       const result = await generateHook({
         topic,
@@ -134,7 +138,12 @@ export default function HookGeneratorPage() {
         style,
         outputLanguage,
       });
-      setHooks(result);
+      if (result && result.length > 0) {
+        setHooks(result);
+        analytics.onSuccess(outputLanguage, Date.now() - startMs);
+      }
+    } catch {
+      analytics.onError("provider_error");
     } finally {
       setIsLoading(false);
     }
@@ -143,6 +152,7 @@ export default function HookGeneratorPage() {
   async function handleCopyOne(text: string, index: number) {
     await navigator.clipboard.writeText(text);
     setCopiedIndex(index);
+    analytics.onCopy();
     setTimeout(() => setCopiedIndex((prev) => (prev === index ? null : prev)), 1800);
   }
 
@@ -150,6 +160,7 @@ export default function HookGeneratorPage() {
     if (!hooks) return;
     await navigator.clipboard.writeText(hooks.join("\n"));
     setCopiedAll(true);
+    analytics.onCopy();
     setTimeout(() => setCopiedAll(false), 1800);
   }
 
@@ -361,6 +372,7 @@ export default function HookGeneratorPage() {
                 value={outputLanguage}
                 onChange={setOutputLanguage}
                 accentColor={CORAL}
+                generatorId="hook"
               />
 
               <button

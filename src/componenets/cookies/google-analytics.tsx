@@ -1,16 +1,44 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { getSavedPreferences, type CookiePreferences } from "@/lib/cookies";
-import { GA_ID, setGADisabled, deleteGACookies } from "@/lib/analytics";
+import { GA_ID, setGADisabled, deleteGACookies, trackPageView } from "@/lib/analytics";
+
+/**
+ * Tracks client-side page views in Next.js App Router.
+ * Uses a ref to guarantee that no duplicate page_view events are sent
+ * when components re-render or state changes.
+ */
+function PageViewTracker() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const lastTrackedUrl = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!pathname) return;
+    const query = searchParams?.toString();
+    const url = query ? `${pathname}?${query}` : pathname;
+
+    // Prevent duplicate events for the same URL
+    if (lastTrackedUrl.current === url) return;
+    lastTrackedUrl.current = url;
+
+    trackPageView(url);
+  }, [pathname, searchParams]);
+
+  return null;
+}
 
 export default function GoogleAnalytics() {
   const [prefs, setPrefs] = useState<CookiePreferences | null>(null);
 
-  // Baca consent tersimpan + dengarkan perubahan dari banner
+  // Read saved consent preferences and listen for updates from cookie banner
   useEffect(() => {
-    setPrefs(getSavedPreferences());
+    queueMicrotask(() => {
+      setPrefs(getSavedPreferences());
+    });
 
     const onChange = (e: Event) => {
       setPrefs((e as CustomEvent<CookiePreferences>).detail);
@@ -19,7 +47,7 @@ export default function GoogleAnalytics() {
     return () => window.removeEventListener("cookieConsentChanged", onChange);
   }, []);
 
-  // Terapkan perubahan consent ke GA4
+  // Sync consent state to GA4
   useEffect(() => {
     if (!prefs || !GA_ID) return;
 
@@ -28,16 +56,15 @@ export default function GoogleAnalytics() {
 
     window.gtag?.("consent", "update", {
       analytics_storage: prefs.analytics ? "granted" : "denied",
-      ad_storage: prefs.advertising ? "granted" : "denied",
-      ad_user_data: prefs.advertising ? "granted" : "denied",
-      ad_personalization: prefs.advertising ? "granted" : "denied",
+      // Keep advertising strictly denied — advertising tags are separate
+      ad_storage: "denied",
+      ad_user_data: "denied",
+      ad_personalization: "denied",
     });
   }, [prefs]);
 
-  // Jangan load apa pun sebelum user setuju analytics
+  // Do NOT render scripts or track anything until user explicitly grants analytics consent
   if (!GA_ID || !prefs?.analytics) return null;
-
-  const adState = prefs.advertising ? "granted" : "denied";
 
   return (
     <>
@@ -52,14 +79,19 @@ export default function GoogleAnalytics() {
           window.gtag = gtag;
           gtag('consent', 'default', {
             analytics_storage: 'granted',
-            ad_storage: '${adState}',
-            ad_user_data: '${adState}',
-            ad_personalization: '${adState}'
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied'
           });
           gtag('js', new Date());
-          gtag('config', '${GA_ID}');
+          gtag('config', '${GA_ID}', {
+            send_page_view: false
+          });
         `}
       </Script>
+      <Suspense fallback={null}>
+        <PageViewTracker />
+      </Suspense>
     </>
   );
 }

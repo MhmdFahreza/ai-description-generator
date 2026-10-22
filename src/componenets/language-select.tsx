@@ -5,6 +5,7 @@ import {
   outputLanguageOptions,
   type OutputLanguage,
 } from "@/constants/languages";
+import { trackOutputLanguageSelected } from "@/lib/analytics";
 
 interface LanguageSelectProps {
   value: OutputLanguage;
@@ -12,6 +13,7 @@ interface LanguageSelectProps {
   accentColor?: string;
   id?: string;
   className?: string;
+  generatorId?: string;
 }
 
 export function LanguageSelect({
@@ -20,7 +22,15 @@ export function LanguageSelect({
   accentColor = "#F2B441",
   id = "outputLanguage",
   className = "",
+  generatorId,
 }: LanguageSelectProps) {
+  const handleChange = (newLang: OutputLanguage) => {
+    onChange(newLang);
+    if (generatorId) {
+      trackOutputLanguageSelected(generatorId, newLang);
+    }
+  };
+
   return (
     <div className={className}>
       <div className="flex items-center justify-between">
@@ -39,7 +49,7 @@ export function LanguageSelect({
         <select
           id={id}
           value={value}
-          onChange={(e) => onChange(e.target.value as OutputLanguage)}
+          onChange={(e) => handleChange(e.target.value as OutputLanguage)}
           style={{
             borderColor: undefined,
           }}

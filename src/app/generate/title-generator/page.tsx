@@ -22,6 +22,7 @@ import { generateTitle } from "@/lib/generators/title-generator";
 import { formatBytes, getMediaKind } from "@/lib/media";
 import { ssGet, ssSet } from "@/lib/session-storage";
 import { idbGetFile, idbSetFile, idbRemoveFile } from "@/lib/indexed-db";
+import { useGeneratorAnalytics } from "@/hooks/use-generator-analytics";
 
 const CORAL = "#E8623D";
 const SS_KEY = "title-generator-form";
@@ -52,6 +53,7 @@ function IconType({ className }: { className?: string }) {
 }
 
 export default function TitleGeneratorPage() {
+  const analytics = useGeneratorAnalytics("title-generator");
   const [media, setMedia] = useState<File | null>(null);
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
   const [mediaError, setMediaError] = useState<string | null>(null);
@@ -199,9 +201,16 @@ export default function TitleGeneratorPage() {
     setIsLoading(true);
     setCopiedAll(false);
     setCopiedIndex(null);
+    analytics.onAttempt(outputLanguage);
+    const startMs = Date.now();
     try {
       const result = await generateTitle({ style, description, outputLanguage, media });
-      setTitles(result);
+      if (result && result.length > 0) {
+        setTitles(result);
+        analytics.onSuccess(outputLanguage, Date.now() - startMs);
+      }
+    } catch {
+      analytics.onError("provider_error");
     } finally {
       setIsLoading(false);
     }
@@ -210,6 +219,7 @@ export default function TitleGeneratorPage() {
   async function handleCopyOne(text: string, index: number) {
     await navigator.clipboard.writeText(text);
     setCopiedIndex(index);
+    analytics.onCopy();
     setTimeout(() => setCopiedIndex((prev) => (prev === index ? null : prev)), 1800);
   }
 
@@ -217,6 +227,7 @@ export default function TitleGeneratorPage() {
     if (!titles) return;
     await navigator.clipboard.writeText(titles.join("\n"));
     setCopiedAll(true);
+    analytics.onCopy();
     setTimeout(() => setCopiedAll(false), 1800);
   }
 
@@ -454,6 +465,7 @@ export default function TitleGeneratorPage() {
                 value={outputLanguage}
                 onChange={setOutputLanguage}
                 accentColor={CORAL}
+                generatorId="title-generator"
               />
 
               <button

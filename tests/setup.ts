@@ -11,3 +11,7 @@ if (!globalThis.crypto?.randomUUID) {
   // @ts-expect-error – polyfill
   globalThis.crypto = webcrypto;
 }
+
+if (typeof globalThis.dispatchEvent === "undefined") {
+  globalThis.dispatchEvent = () => true;
+}

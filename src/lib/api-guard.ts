@@ -27,6 +27,7 @@ import {
   validateFields,
   type FieldSchema,
 } from "./input-validation";
+import { inferGeneratorId, recordAiUsage } from "./ai-monitor";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -80,23 +81,50 @@ function validateOrigin(req: NextRequest): NextResponse | null {
 
 export function withGuard(schema: FieldSchema[], handler: RouteHandler) {
   return async function guardedRoute(req: NextRequest): Promise<NextResponse> {
+    const startTime = Date.now();
+    const generatorId = inferGeneratorId(req.nextUrl?.pathname || req.url || "");
+
     // -----------------------------------------------------------------------
     // 0. Origin / CSRF check
     // -----------------------------------------------------------------------
     const originError = validateOrigin(req);
-    if (originError) return originError;
+    if (originError) {
+      void recordAiUsage({
+        generatorId,
+        durationMs: Date.now() - startTime,
+        status: originError.status,
+        errorCategory: "unauthorized",
+      });
+      return originError;
+    }
 
     // -----------------------------------------------------------------------
     // 1. Content-Type check
     // -----------------------------------------------------------------------
     const ctError = validateContentType(req);
-    if (ctError) return ctError;
+    if (ctError) {
+      void recordAiUsage({
+        generatorId,
+        durationMs: Date.now() - startTime,
+        status: ctError.status,
+        errorCategory: "invalid_input",
+      });
+      return ctError;
+    }
 
     // -----------------------------------------------------------------------
     // 2. Parse body (termasuk batas ukuran 50KB)
     // -----------------------------------------------------------------------
     const bodyOrError = await parseBody(req);
-    if (bodyOrError instanceof NextResponse) return bodyOrError;
+    if (bodyOrError instanceof NextResponse) {
+      void recordAiUsage({
+        generatorId,
+        durationMs: Date.now() - startTime,
+        status: bodyOrError.status,
+        errorCategory: "invalid_input",
+      });
+      return bodyOrError;
+    }
 
     const body = bodyOrError;
 
@@ -105,7 +133,15 @@ export function withGuard(schema: FieldSchema[], handler: RouteHandler) {
     //    valid tidak mengurangi kuota pengguna)
     // -----------------------------------------------------------------------
     const validationError = validateFields(body, schema);
-    if (validationError) return validationError;
+    if (validationError) {
+      void recordAiUsage({
+        generatorId,
+        durationMs: Date.now() - startTime,
+        status: validationError.status,
+        errorCategory: "invalid_input",
+      });
+      return validationError;
+    }
 
     // -----------------------------------------------------------------------
     // 4. Server-managed anonymous identity (HttpOnly cookie bertanda tangan + IP)
@@ -124,6 +160,12 @@ export function withGuard(schema: FieldSchema[], handler: RouteHandler) {
         "[api-guard] Rate limiter service error:",
         err instanceof Error ? err.message : "unknown"
       );
+      void recordAiUsage({
+        generatorId,
+        durationMs: Date.now() - startTime,
+        status: 503,
+        errorCategory: "internal_error",
+      });
       return NextResponse.json(
         {
           error:
@@ -170,6 +212,15 @@ export function withGuard(schema: FieldSchema[], handler: RouteHandler) {
       }
 
       attachVisitorCookie(response, identity.visitorId, identity.isNew);
+
+      void recordAiUsage({
+        generatorId,
+        durationMs: Date.now() - startTime,
+        status: 429,
+        rejectedByRateLimit: true,
+        errorCategory: "rate_limit",
+      });
+
       return response;
     }
 
@@ -186,6 +237,12 @@ export function withGuard(schema: FieldSchema[], handler: RouteHandler) {
         "[api-guard] Unhandled exception pada route handler:",
         handlerErr instanceof Error ? handlerErr.message : "unknown"
       );
+      void recordAiUsage({
+        generatorId,
+        durationMs: Date.now() - startTime,
+        status: 500,
+        errorCategory: "internal_error",
+      });
       return NextResponse.json(
         {
           error:

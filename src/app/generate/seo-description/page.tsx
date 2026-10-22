@@ -17,6 +17,7 @@ import { type OutputLanguage } from "@/constants/languages";
 import { LanguageSelect } from "@/componenets/language-select";
 import { generateSeoDescription } from "@/lib/generators/seo-description";
 import { ssGet, ssSet } from "@/lib/session-storage";
+import { useGeneratorAnalytics } from "@/hooks/use-generator-analytics";
 
 const CORAL = "#E8623D";
 const META_LIMIT = 160;
@@ -30,6 +31,7 @@ interface FormState {
 }
 
 export default function SeoDescriptionPage() {
+  const analytics = useGeneratorAnalytics("seo-description");
   const [concept, setConcept] = useState("");
   const [tone, setTone] = useState(toneOptions[0].value);
   const [outputLanguage, setOutputLanguage] = useState<OutputLanguage>("auto");
@@ -59,9 +61,16 @@ export default function SeoDescriptionPage() {
     if (!canGenerate) return;
     setIsLoading(true);
     setCopied(false);
+    analytics.onAttempt(outputLanguage);
+    const startMs = Date.now();
     try {
       const text = await generateSeoDescription({ concept, tone, outputLanguage });
-      setResult(text);
+      if (text) {
+        setResult(text);
+        analytics.onSuccess(outputLanguage, Date.now() - startMs);
+      }
+    } catch {
+      analytics.onError("provider_error");
     } finally {
       setIsLoading(false);
     }
@@ -71,6 +80,7 @@ export default function SeoDescriptionPage() {
     if (!result) return;
     await navigator.clipboard.writeText(result);
     setCopied(true);
+    analytics.onCopy();
     setTimeout(() => setCopied(false), 1800);
   }
 
@@ -151,6 +161,7 @@ export default function SeoDescriptionPage() {
                 value={outputLanguage}
                 onChange={setOutputLanguage}
                 accentColor={CORAL}
+                generatorId="seo-description"
               />
 
               <button

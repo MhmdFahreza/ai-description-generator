@@ -19,6 +19,7 @@ import { ssGet, ssSet } from "@/lib/session-storage";
 
 import type { OutputLanguage } from "@/constants/languages";
 import { LanguageSelect } from "@/componenets/language-select";
+import { useGeneratorAnalytics } from "@/hooks/use-generator-analytics";
 
 const TEAL = "#4FB6A8";
 const SS_KEY = "marketplace-description-form";
@@ -33,6 +34,7 @@ interface FormState {
 }
 
 export default function MarketplaceDescriptionPage() {
+  const analytics = useGeneratorAnalytics("marketplace-description");
   const [concept, setConcept] = useState("");
   const [businessType, setBusinessType] = useState(businessTypeOptions[0].value);
   const [tone, setTone] = useState(toneOptions[0].value);
@@ -73,6 +75,8 @@ export default function MarketplaceDescriptionPage() {
     if (!canGenerate) return;
     setIsLoading(true);
     setCopied(false);
+    analytics.onAttempt(outputLanguage);
+    const startMs = Date.now();
     try {
       const text = await generateMarketplaceDescription({
         concept,
@@ -81,7 +85,12 @@ export default function MarketplaceDescriptionPage() {
         businessModel,
         outputLanguage,
       });
-      setResult(text);
+      if (text) {
+        setResult(text);
+        analytics.onSuccess(outputLanguage, Date.now() - startMs);
+      }
+    } catch {
+      analytics.onError("provider_error");
     } finally {
       setIsLoading(false);
     }
@@ -91,6 +100,7 @@ export default function MarketplaceDescriptionPage() {
     if (!result) return;
     await navigator.clipboard.writeText(result);
     setCopied(true);
+    analytics.onCopy();
     setTimeout(() => setCopied(false), 1800);
   }
 
@@ -217,6 +227,7 @@ export default function MarketplaceDescriptionPage() {
                 value={outputLanguage}
                 onChange={setOutputLanguage}
                 accentColor={TEAL}
+                generatorId="marketplace-description"
               />
 
               <button
