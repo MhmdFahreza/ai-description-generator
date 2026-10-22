@@ -18,6 +18,9 @@ import { hookPlatformOptions, type HookPlatform } from "@/constants/hook-platfor
 import { generateHook } from "@/lib/generators/hook-generator";
 import { ssGet, ssSet } from "@/lib/session-storage";
 
+import type { OutputLanguage } from "@/constants/languages";
+import { LanguageSelect } from "@/componenets/language-select";
+
 const CORAL = "#E8623D";
 const SS_KEY = "hook-generator-form";
 
@@ -26,6 +29,7 @@ interface FormState {
   description: string;
   platform: HookPlatform;
   style: HookStyle | null;
+  outputLanguage?: OutputLanguage;
   hooks: string[] | null;
 }
 
@@ -49,6 +53,7 @@ function IconHook({ className }: { className?: string }) {
 export default function HookGeneratorPage() {
   const [topic, setTopic] = useState("");
   const [description, setDescription] = useState("");
+  const [outputLanguage, setOutputLanguage] = useState<OutputLanguage>("auto");
 
   const [platform, setPlatform] = useState<HookPlatform>("general");
   const [isPlatformOpen, setIsPlatformOpen] = useState(false);
@@ -71,13 +76,21 @@ export default function HookGeneratorPage() {
     if (saved.description) setDescription(saved.description);
     if (saved.platform) setPlatform(saved.platform);
     if (saved.style) setStyle(saved.style);
+    if (saved.outputLanguage) setOutputLanguage(saved.outputLanguage);
     if (saved.hooks) setHooks(saved.hooks);
   }, []);
 
   // Persist whenever state changes
   useEffect(() => {
-    ssSet<FormState>(SS_KEY, { topic, description, platform, style, hooks });
-  }, [topic, description, platform, style, hooks]);
+    ssSet<FormState>(SS_KEY, {
+      topic,
+      description,
+      platform,
+      style,
+      outputLanguage,
+      hooks,
+    });
+  }, [topic, description, platform, style, outputLanguage, hooks]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -114,7 +127,13 @@ export default function HookGeneratorPage() {
     setCopiedAll(false);
     setCopiedIndex(null);
     try {
-      const result = await generateHook({ topic, description, platform, style });
+      const result = await generateHook({
+        topic,
+        description,
+        platform,
+        style,
+        outputLanguage,
+      });
       setHooks(result);
     } finally {
       setIsLoading(false);
@@ -336,6 +355,13 @@ export default function HookGeneratorPage() {
                   </ul>
                 )}
               </div>
+
+              {/* Output Language */}
+              <LanguageSelect
+                value={outputLanguage}
+                onChange={setOutputLanguage}
+                accentColor={CORAL}
+              />
 
               <button
                 type="button"

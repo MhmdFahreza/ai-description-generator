@@ -29,6 +29,7 @@ const MAX_FIELD_LENGTHS: Record<string, number> = {
   platform: 30,
   businessType: 30,
   businessModel: 30,
+  outputLanguage: 20,
 };
 
 /** Default max kalau field gak ada di daftar atas */
@@ -38,6 +39,9 @@ const DEFAULT_MAX_LENGTH = 500;
 const ALLOWED_VALUES: Record<string, Set<string>> = {
   tone: new Set([
     "casual", "formal", "persuasive", "professional", "playful", "urgent",
+  ]),
+  outputLanguage: new Set([
+    "auto", "en", "id", "es", "fr", "pt", "ja", "ko",
   ]),
   style: new Set([
     // Advertisement styles

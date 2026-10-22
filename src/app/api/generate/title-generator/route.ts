@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { withGuard } from "@/lib/api-guard";
+import {
+  sanitizeOutputLanguage,
+  getLanguageInstruction,
+} from "@/lib/output-language";
 
 export const runtime = "nodejs";
 
@@ -13,6 +17,7 @@ export const POST = withGuard(
     { name: "style", required: false },
     { name: "styleLabel", required: false, freeText: true },
     { name: "styleDescription", required: false, freeText: true },
+    { name: "outputLanguage", required: false },
   ],
   async (body) => {
     const apiKey = process.env.GROQ_API_KEY;
@@ -24,6 +29,7 @@ export const POST = withGuard(
     }
 
     const description = (body.description as string).trim();
+    const outputLanguage = sanitizeOutputLanguage(body.outputLanguage);
 
     // `styleLabel`/`styleDescription` dikirim dari client (lookup dari
     // titleStyleOptions) supaya route ini gak perlu hardcode & duplikat daftar
@@ -53,9 +59,10 @@ export const POST = withGuard(
             {
               role: "system",
               content:
-                "Kamu content strategist Indonesia yang ahli bikin judul konten yang menarik. " +
-                `Buatin persis ${TITLE_COUNT} pilihan judul dalam Bahasa Indonesia dengan gaya "${styleGuide}". ` +
-                "Tulis SATU judul per baris, tanpa nomor, tanpa bullet, tanpa tanda kutip, tanpa penjelasan tambahan — cuma daftar judulnya aja, satu judul per baris.",
+                "Kamu adalah content strategist profesional yang ahli membuat judul konten yang menarik dan memikat perhatian. " +
+                `Buatkan persis ${TITLE_COUNT} pilihan judul dengan gaya "${styleGuide}". ` +
+                "Tulis SATU judul per baris, tanpa nomor, tanpa bullet, tanpa tanda kutip, tanpa penjelasan tambahan — hanya daftar judulnya saja, satu judul per baris.\n\n" +
+                getLanguageInstruction(outputLanguage),
             },
             {
               role: "user",

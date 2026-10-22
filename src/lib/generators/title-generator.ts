@@ -1,11 +1,13 @@
 // src/lib/generators/title-generator.ts
 
 import { titleStyleOptions, type TitleStyle } from "@/constants/title-styles";
+import type { OutputLanguage } from "@/constants/languages";
 import { apiFetch } from "../api-fetch";
 
 export type GenerateTitleInput = {
   style: TitleStyle;
   description: string;
+  outputLanguage?: OutputLanguage;
   media?: File | null;
 };
 
@@ -25,6 +27,7 @@ export type GenerateTitleInput = {
 export async function generateTitle({
   style,
   description,
+  outputLanguage = "auto",
   media,
 }: GenerateTitleInput): Promise<string[]> {
   void media; // belum dipakai, lihat NOTE di atas
@@ -39,6 +42,7 @@ export async function generateTitle({
       style,
       styleLabel: styleOption?.label ?? style,
       styleDescription: styleOption?.description ?? "",
+      outputLanguage,
     }),
   });
 

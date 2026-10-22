@@ -1,21 +1,24 @@
 // src/lib/generators/advertisement-generator.ts
 
 import type { AdStyle } from "@/constants/ad-styles";
+import type { OutputLanguage } from "@/constants/languages";
 import { apiFetch } from "../api-fetch";
 
 interface GenerateAdParams {
   description: string;
   style: AdStyle;
+  outputLanguage?: OutputLanguage;
 }
 
 export async function generateAdvertisement({
   description,
   style,
+  outputLanguage = "auto",
 }: GenerateAdParams): Promise<string> {
   const res = await apiFetch("/api/generate/advertisement", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ description, style }),
+    body: JSON.stringify({ description, style, outputLanguage }),
   });
 
   const data = await res.json();

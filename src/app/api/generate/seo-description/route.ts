@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { withGuard } from "@/lib/api-guard";
+import {
+  sanitizeOutputLanguage,
+  getLanguageInstruction,
+} from "@/lib/output-language";
 
 export const runtime = "nodejs";
 
@@ -19,6 +23,7 @@ export const POST = withGuard(
   [
     { name: "concept", required: true, freeText: true },
     { name: "tone", required: false },
+    { name: "outputLanguage", required: false },
   ],
   async (body) => {
     const apiKey = process.env.GROQ_API_KEY;
@@ -30,6 +35,7 @@ export const POST = withGuard(
     }
 
     const concept = (body.concept as string).trim();
+    const outputLanguage = sanitizeOutputLanguage(body.outputLanguage);
     const toneGuide = toneGuides[(body.tone as string) ?? "casual"] ?? toneGuides.casual;
 
     try {
@@ -49,11 +55,12 @@ export const POST = withGuard(
             {
               role: "system",
               content:
-                "Kamu SEO specialist Indonesia yang ahli menulis meta description yang menarik dan ramah mesin pencari. " +
-                `Tulis SATU meta description dalam Bahasa Indonesia dengan gaya ${toneGuide}. ` +
+                "Kamu adalah SEO specialist profesional yang ahli menulis meta description yang menarik dan ramah mesin pencari. " +
+                `Gaya penulisan: ${toneGuide}. ` +
                 "Panjang HARUS antara 120-160 karakter (termasuk spasi) — ini sangat penting agar tidak terpotong di hasil pencarian Google. " +
-                "Fokus ke kata kunci utama, manfaat untuk pengguna, dan sedikit CTA. " +
-                "Tulis langsung teksnya saja tanpa label, tanda kutip, atau penjelasan tambahan.",
+                "Fokus ke kata kunci utama, manfaat untuk pengguna, dan sedikit ajakan klik (CTA). " +
+                "Tulis langsung teksnya saja tanpa label, tanda kutip, atau penjelasan tambahan.\n\n" +
+                getLanguageInstruction(outputLanguage),
             },
             {
               role: "user",

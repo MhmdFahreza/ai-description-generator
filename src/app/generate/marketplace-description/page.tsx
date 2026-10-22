@@ -17,6 +17,9 @@ import { businessTypeOptions, businessModelOptions } from "@/constants/business"
 import { generateMarketplaceDescription } from "@/lib/generators/marketplace-description";
 import { ssGet, ssSet } from "@/lib/session-storage";
 
+import type { OutputLanguage } from "@/constants/languages";
+import { LanguageSelect } from "@/componenets/language-select";
+
 const TEAL = "#4FB6A8";
 const SS_KEY = "marketplace-description-form";
 
@@ -25,6 +28,7 @@ interface FormState {
   businessType: string;
   tone: string;
   businessModel: string;
+  outputLanguage?: OutputLanguage;
   result: string | null;
 }
 
@@ -33,6 +37,7 @@ export default function MarketplaceDescriptionPage() {
   const [businessType, setBusinessType] = useState(businessTypeOptions[0].value);
   const [tone, setTone] = useState(toneOptions[0].value);
   const [businessModel, setBusinessModel] = useState(businessModelOptions[0].value);
+  const [outputLanguage, setOutputLanguage] = useState<OutputLanguage>("auto");
 
   const [result, setResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,13 +51,21 @@ export default function MarketplaceDescriptionPage() {
     if (saved.businessType) setBusinessType(saved.businessType);
     if (saved.tone) setTone(saved.tone);
     if (saved.businessModel) setBusinessModel(saved.businessModel);
+    if (saved.outputLanguage) setOutputLanguage(saved.outputLanguage);
     if (saved.result) setResult(saved.result);
   }, []);
 
   // Persist form + result to sessionStorage whenever they change
   useEffect(() => {
-    ssSet<FormState>(SS_KEY, { concept, businessType, tone, businessModel, result });
-  }, [concept, businessType, tone, businessModel, result]);
+    ssSet<FormState>(SS_KEY, {
+      concept,
+      businessType,
+      tone,
+      businessModel,
+      outputLanguage,
+      result,
+    });
+  }, [concept, businessType, tone, businessModel, outputLanguage, result]);
 
   const canGenerate = concept.trim().length > 0 && !isLoading;
 
@@ -66,6 +79,7 @@ export default function MarketplaceDescriptionPage() {
         businessType,
         tone,
         businessModel,
+        outputLanguage,
       });
       setResult(text);
     } finally {
@@ -197,6 +211,13 @@ export default function MarketplaceDescriptionPage() {
                   <IconChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9A9CA5]" />
                 </div>
               </div>
+
+              {/* Output Language */}
+              <LanguageSelect
+                value={outputLanguage}
+                onChange={setOutputLanguage}
+                accentColor={TEAL}
+              />
 
               <button
                 type="button"

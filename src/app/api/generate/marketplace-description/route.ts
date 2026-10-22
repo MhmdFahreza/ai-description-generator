@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { withGuard } from "@/lib/api-guard";
+import {
+  sanitizeOutputLanguage,
+  getLanguageInstruction,
+} from "@/lib/output-language";
 
 export const runtime = "nodejs";
 
@@ -42,6 +46,7 @@ export const POST = withGuard(
     { name: "businessType", required: false },
     { name: "businessModel", required: false },
     { name: "tone", required: false },
+    { name: "outputLanguage", required: false },
   ],
   async (body) => {
     const apiKey = process.env.GROQ_API_KEY;
@@ -53,6 +58,7 @@ export const POST = withGuard(
     }
 
     const concept = (body.concept as string).trim();
+    const outputLanguage = sanitizeOutputLanguage(body.outputLanguage);
 
     const toneGuide = toneGuides[(body.tone as string) ?? "casual"] ?? toneGuides.casual;
     const businessTypeLabel = businessTypeLabels[(body.businessType as string) ?? "other"] ?? businessTypeLabels.other;
@@ -75,11 +81,12 @@ export const POST = withGuard(
             {
               role: "system",
               content:
-                "Kamu copywriter marketplace Indonesia yang ahli bikin deskripsi toko/produk yang siap tempel ke Tokopedia, Shopee, Lazada, dan marketplace lainnya. " +
-                `Tulis deskripsi dalam Bahasa Indonesia dengan gaya bahasa ${toneGuide}. ` +
+                "Kamu adalah copywriter marketplace profesional yang ahli membuat deskripsi toko/produk yang siap pakai untuk listing e-commerce. " +
+                `Gaya bahasa / tone penulisan: ${toneGuide}. ` +
                 `Kategori bisnis: ${businessTypeLabel}. Model bisnis: ${businessModelLabel}. ` +
                 "Panjang 4-6 kalimat, menonjolkan keunggulan dan keunikan toko/produk, manfaat untuk pembeli, dan sedikit ajakan untuk bertransaksi. " +
-                "Jangan pakai heading, markdown, atau bullet point — langsung paragraf teks yang bisa langsung dipakai.",
+                "Jangan pakai heading, markdown, atau bullet point — langsung paragraf teks yang bisa langsung dipakai.\n\n" +
+                getLanguageInstruction(outputLanguage),
             },
             {
               role: "user",

@@ -1,9 +1,11 @@
+import type { OutputLanguage } from "@/constants/languages";
 import { apiFetch } from "../api-fetch";
 
 export type GenerateInput = {
   productName: string;
   idea: string;
   tone: string;
+  outputLanguage?: OutputLanguage;
   image?: File | null;
 };
 
@@ -23,6 +25,7 @@ export async function generateProductDescription({
   productName,
   idea,
   tone,
+  outputLanguage = "auto",
   image,
 }: GenerateInput): Promise<string> {
   void image; // belum dipakai, lihat NOTE di atas
@@ -30,7 +33,7 @@ export async function generateProductDescription({
   const res = await apiFetch("/api/generate/product-description", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ productName, idea, tone }),
+    body: JSON.stringify({ productName, idea, tone, outputLanguage }),
   });
 
   const data = await res.json();

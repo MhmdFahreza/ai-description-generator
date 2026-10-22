@@ -20,6 +20,9 @@ import { validateImageFile, formatBytes } from "@/lib/image";
 import { ssGet, ssSet } from "@/lib/session-storage";
 import { idbGetFile, idbSetFile, idbRemoveFile } from "@/lib/indexed-db";
 
+import type { OutputLanguage } from "@/constants/languages";
+import { LanguageSelect } from "@/componenets/language-select";
+
 const AMBER = "#F2B441";
 const SS_KEY = "product-description-form";
 const IDB_KEY = "product-description-image";
@@ -28,6 +31,7 @@ interface FormState {
   productName: string;
   idea: string;
   tone: string;
+  outputLanguage?: OutputLanguage;
   result: string | null;
   hasImage: boolean; // flag so we know to check IndexedDB
 }
@@ -36,6 +40,7 @@ export default function ProductDescriptionPage() {
   const [productName, setProductName] = useState("");
   const [idea, setIdea] = useState("");
   const [tone, setTone] = useState(toneOptions[0].value);
+  const [outputLanguage, setOutputLanguage] = useState<OutputLanguage>("auto");
 
   const [productImage, setProductImage] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -56,6 +61,7 @@ export default function ProductDescriptionPage() {
       if (saved.productName) setProductName(saved.productName);
       if (saved.idea) setIdea(saved.idea);
       if (saved.tone) setTone(saved.tone);
+      if (saved.outputLanguage) setOutputLanguage(saved.outputLanguage);
       if (saved.result) setResult(saved.result);
 
       if (saved.hasImage) {
@@ -75,10 +81,11 @@ export default function ProductDescriptionPage() {
       productName,
       idea,
       tone,
+      outputLanguage,
       result,
       hasImage: productImage !== null,
     });
-  }, [productName, idea, tone, result, productImage]);
+  }, [productName, idea, tone, outputLanguage, result, productImage]);
 
   // Clean up object URL on unmount to prevent memory leaks.
   useEffect(() => {
@@ -170,6 +177,7 @@ export default function ProductDescriptionPage() {
         productName,
         idea,
         tone,
+        outputLanguage,
         image: productImage,
       });
       setResult(text);
@@ -361,6 +369,13 @@ export default function ProductDescriptionPage() {
                   <IconChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9A9CA5]" />
                 </div>
               </div>
+
+              {/* Output Language */}
+              <LanguageSelect
+                value={outputLanguage}
+                onChange={setOutputLanguage}
+                accentColor={AMBER}
+              />
 
               <button
                 type="button"

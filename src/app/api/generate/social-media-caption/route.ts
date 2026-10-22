@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { withGuard } from "@/lib/api-guard";
+import {
+  sanitizeOutputLanguage,
+  getLanguageInstruction,
+} from "@/lib/output-language";
 
 export const runtime = "nodejs";
 
@@ -33,6 +37,7 @@ export const POST = withGuard(
   [
     { name: "idea", required: true, freeText: true },
     { name: "platform", required: false },
+    { name: "outputLanguage", required: false },
   ],
   async (body) => {
     const apiKey = process.env.GROQ_API_KEY;
@@ -45,6 +50,7 @@ export const POST = withGuard(
 
     const idea = (body.idea as string).trim();
     const platform = ((body.platform as string) ?? "instagram") as Platform;
+    const outputLanguage = sanitizeOutputLanguage(body.outputLanguage);
     const guide = platformGuides[platform] ?? platformGuides.instagram;
 
     try {
@@ -65,9 +71,10 @@ export const POST = withGuard(
             {
               role: "system",
               content:
-                "Kamu social media strategist Indonesia yang ahli bikin caption yang nyantol sesuai karakter tiap platform. " +
-                `Tulis dalam Bahasa Indonesia (boleh selipin gaya bahasa gaul/Inggris ringan kalau natural). Ikuti panduan gaya berikut: ${guide} ` +
-                "Jangan pakai heading atau markdown, langsung teks caption yang siap post.",
+                "Kamu adalah social media strategist profesional yang ahli membuat caption yang menarik sesuai karakter tiap platform. " +
+                `Ikuti panduan format platform berikut: ${guide}. ` +
+                "Jangan pakai heading atau markdown, langsung teks caption yang siap diposting.\n\n" +
+                getLanguageInstruction(outputLanguage),
             },
             {
               role: "user",

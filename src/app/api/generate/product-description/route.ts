@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { withGuard } from "@/lib/api-guard";
+import {
+  sanitizeOutputLanguage,
+  getLanguageInstruction,
+} from "@/lib/output-language";
 
 export const runtime = "nodejs";
 
@@ -20,6 +24,7 @@ export const POST = withGuard(
     { name: "productName", required: true, freeText: true },
     { name: "idea", required: true, freeText: true },
     { name: "tone", required: false },
+    { name: "outputLanguage", required: false },
   ],
   async (body) => {
     const apiKey = process.env.GROQ_API_KEY;
@@ -33,6 +38,7 @@ export const POST = withGuard(
     const productName = (body.productName as string).trim();
     const idea = (body.idea as string).trim();
     const tone = (body.tone as string) ?? "casual";
+    const outputLanguage = sanitizeOutputLanguage(body.outputLanguage);
 
     const toneGuide = toneGuides[tone] ?? toneGuides.casual;
 
@@ -54,10 +60,11 @@ export const POST = withGuard(
             {
               role: "system",
               content:
-                "Kamu copywriter e-commerce Indonesia yang ahli bikin deskripsi produk yang siap tempel ke listing marketplace (Tokopedia/Shopee/Instagram). " +
-                `Tulis dalam Bahasa Indonesia dengan gaya bahasa ${toneGuide}. ` +
-                "Panjang 3-5 kalimat, fokus ke fitur & manfaat produk berdasarkan detail yang dikasih penjual. " +
-                "Jangan pakai heading, markdown, atau bullet point — langsung teks paragraf saja.",
+                "Kamu adalah copywriter e-commerce profesional yang ahli membuat deskripsi produk siap pakai untuk listing marketplace dan toko online. " +
+                `Gaya bahasa / tone penulisan: ${toneGuide}. ` +
+                "Panjang 3-5 kalimat, fokus ke fitur & manfaat produk berdasarkan detail yang diberikan penjual. " +
+                "Jangan pakai heading, markdown, atau bullet point — langsung teks paragraf saja.\n\n" +
+                getLanguageInstruction(outputLanguage),
             },
             {
               role: "user",

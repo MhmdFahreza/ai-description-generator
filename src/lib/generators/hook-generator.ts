@@ -2,6 +2,7 @@
 
 import type { HookStyle } from "@/constants/hook-styles";
 import type { HookPlatform } from "@/constants/hook-platforms";
+import type { OutputLanguage } from "@/constants/languages";
 import { apiFetch } from "../api-fetch";
 
 interface GenerateHookParams {
@@ -9,6 +10,7 @@ interface GenerateHookParams {
   description: string;
   platform: HookPlatform;
   style: HookStyle;
+  outputLanguage?: OutputLanguage;
 }
 
 export async function generateHook({
@@ -16,11 +18,12 @@ export async function generateHook({
   description,
   platform,
   style,
+  outputLanguage = "auto",
 }: GenerateHookParams): Promise<string[]> {
   const res = await apiFetch("/api/generate/hook", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ topic, description, platform, style }),
+    body: JSON.stringify({ topic, description, platform, style, outputLanguage }),
   });
 
   const data = await res.json();

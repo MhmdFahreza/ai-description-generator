@@ -17,11 +17,15 @@ import { generateAdvertisement } from "@/lib/generators/advertisement-generator"
 import { ssGet, ssSet } from "@/lib/session-storage";
 
 const CORAL = "#E8623D";
+import type { OutputLanguage } from "@/constants/languages";
+import { LanguageSelect } from "@/componenets/language-select";
+
 const SS_KEY = "advertisement-generator-form";
 
 interface FormState {
   description: string;
   style: AdStyle | null;
+  outputLanguage?: OutputLanguage;
   result: string | null;
 }
 
@@ -62,6 +66,7 @@ function IconChevronDown({ className }: { className?: string }) {
 
 export default function AdvertisementGeneratorPage() {
   const [description, setDescription] = useState("");
+  const [outputLanguage, setOutputLanguage] = useState<OutputLanguage>("auto");
 
   const [style, setStyle] = useState<AdStyle | null>(null);
   const [isStyleOpen, setIsStyleOpen] = useState(false);
@@ -77,13 +82,14 @@ export default function AdvertisementGeneratorPage() {
     if (!saved) return;
     if (saved.description) setDescription(saved.description);
     if (saved.style) setStyle(saved.style);
+    if (saved.outputLanguage) setOutputLanguage(saved.outputLanguage);
     if (saved.result) setResult(saved.result);
   }, []);
 
   // Persist whenever state changes
   useEffect(() => {
-    ssSet<FormState>(SS_KEY, { description, style, result });
-  }, [description, style, result]);
+    ssSet<FormState>(SS_KEY, { description, style, outputLanguage, result });
+  }, [description, style, outputLanguage, result]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -110,7 +116,11 @@ export default function AdvertisementGeneratorPage() {
     setIsLoading(true);
     setCopied(false);
     try {
-      const text = await generateAdvertisement({ description, style });
+      const text = await generateAdvertisement({
+        description,
+        style,
+        outputLanguage,
+      });
       setResult(text);
     } finally {
       setIsLoading(false);
@@ -254,6 +264,13 @@ export default function AdvertisementGeneratorPage() {
                   </ul>
                 )}
               </div>
+
+              {/* Output Language */}
+              <LanguageSelect
+                value={outputLanguage}
+                onChange={setOutputLanguage}
+                accentColor={CORAL}
+              />
 
               <button
                 type="button"

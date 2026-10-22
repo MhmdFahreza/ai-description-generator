@@ -15,6 +15,8 @@ import {
   IconX,
 } from "@/componenets/icons";
 import { platformOptions } from "@/constants/platforms";
+import { type OutputLanguage } from "@/constants/languages";
+import { LanguageSelect } from "@/componenets/language-select";
 import { generateSocialMediaCaption } from "@/lib/generators/social-media-caption";
 import { validateMediaFile, formatBytes, getMediaKind } from "@/lib/media";
 import { ssGet, ssSet } from "@/lib/session-storage";
@@ -27,6 +29,7 @@ const IDB_KEY = "social-media-caption-media";
 interface FormState {
   platform: string | null;
   idea: string;
+  outputLanguage: OutputLanguage;
   result: string | null;
   hasMedia: boolean;
 }
@@ -61,6 +64,7 @@ export default function SocialMediaCaptionPage() {
   const platformRef = useRef<HTMLDivElement>(null);
 
   const [idea, setIdea] = useState("");
+  const [outputLanguage, setOutputLanguage] = useState<OutputLanguage>("auto");
 
   const [result, setResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -72,6 +76,7 @@ export default function SocialMediaCaptionPage() {
     if (saved) {
       if (saved.platform) setPlatform(saved.platform);
       if (saved.idea) setIdea(saved.idea);
+      if (saved.outputLanguage) setOutputLanguage(saved.outputLanguage);
       if (saved.result) setResult(saved.result);
 
       if (saved.hasMedia) {
@@ -87,8 +92,8 @@ export default function SocialMediaCaptionPage() {
 
   // Persist to sessionStorage whenever relevant state changes
   useEffect(() => {
-    ssSet<FormState>(SS_KEY, { platform, idea, result, hasMedia: media !== null });
-  }, [platform, idea, result, media]);
+    ssSet<FormState>(SS_KEY, { platform, idea, outputLanguage, result, hasMedia: media !== null });
+  }, [platform, idea, outputLanguage, result, media]);
 
   useEffect(() => {
     return () => {
@@ -193,6 +198,7 @@ export default function SocialMediaCaptionPage() {
       const text = await generateSocialMediaCaption({
         platform: platform as (typeof platformOptions)[number]["value"],
         idea,
+        outputLanguage,
         media,
       });
       setResult(text);
@@ -431,6 +437,12 @@ export default function SocialMediaCaptionPage() {
                   className="mt-2 w-full resize-none rounded-lg border border-white/10 bg-[#0F1115] px-4 py-3 text-sm leading-relaxed text-[#F5F3ED] placeholder:text-[#5C5F68] outline-none transition-colors focus:border-[#E8623D]"
                 />
               </div>
+
+              <LanguageSelect
+                value={outputLanguage}
+                onChange={setOutputLanguage}
+                accentColor={CORAL}
+              />
 
               <button
                 type="button"

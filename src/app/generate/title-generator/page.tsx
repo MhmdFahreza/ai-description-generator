@@ -16,6 +16,8 @@ import {
   IconChevronDown,
 } from "@/componenets/icons";
 import { titleStyleOptions, type TitleStyle } from "@/constants/title-styles";
+import { type OutputLanguage } from "@/constants/languages";
+import { LanguageSelect } from "@/componenets/language-select";
 import { generateTitle } from "@/lib/generators/title-generator";
 import { formatBytes, getMediaKind } from "@/lib/media";
 import { ssGet, ssSet } from "@/lib/session-storage";
@@ -28,6 +30,7 @@ const IDB_KEY = "title-generator-media";
 interface FormState {
   description: string;
   style: TitleStyle | null;
+  outputLanguage: OutputLanguage;
   titles: string[] | null;
   hasMedia: boolean;
 }
@@ -61,6 +64,8 @@ export default function TitleGeneratorPage() {
   const [isStyleOpen, setIsStyleOpen] = useState(false);
   const styleRef = useRef<HTMLDivElement>(null);
 
+  const [outputLanguage, setOutputLanguage] = useState<OutputLanguage>("auto");
+
   const [titles, setTitles] = useState<string[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
@@ -72,6 +77,7 @@ export default function TitleGeneratorPage() {
     if (saved) {
       if (saved.description) setDescription(saved.description);
       if (saved.style) setStyle(saved.style);
+      if (saved.outputLanguage) setOutputLanguage(saved.outputLanguage);
       if (saved.titles) setTitles(saved.titles);
 
       if (saved.hasMedia) {
@@ -87,8 +93,8 @@ export default function TitleGeneratorPage() {
 
   // Persist to sessionStorage whenever state changes
   useEffect(() => {
-    ssSet<FormState>(SS_KEY, { description, style, titles, hasMedia: media !== null });
-  }, [description, style, titles, media]);
+    ssSet<FormState>(SS_KEY, { description, style, outputLanguage, titles, hasMedia: media !== null });
+  }, [description, style, outputLanguage, titles, media]);
 
   // Close style dropdown on outside click or Escape
   useEffect(() => {
@@ -194,7 +200,7 @@ export default function TitleGeneratorPage() {
     setCopiedAll(false);
     setCopiedIndex(null);
     try {
-      const result = await generateTitle({ style, description, media });
+      const result = await generateTitle({ style, description, outputLanguage, media });
       setTitles(result);
     } finally {
       setIsLoading(false);
@@ -443,6 +449,12 @@ export default function TitleGeneratorPage() {
                   </ul>
                 )}
               </div>
+
+              <LanguageSelect
+                value={outputLanguage}
+                onChange={setOutputLanguage}
+                accentColor={CORAL}
+              />
 
               <button
                 type="button"

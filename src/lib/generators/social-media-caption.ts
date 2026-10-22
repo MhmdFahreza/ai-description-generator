@@ -1,9 +1,11 @@
 import type { Platform } from "@/constants/platforms";
+import type { OutputLanguage } from "@/constants/languages";
 import { apiFetch } from "../api-fetch";
 
 export type GenerateInput = {
   platform: Platform;
   idea: string;
+  outputLanguage?: OutputLanguage;
   media?: File | null;
 };
 
@@ -22,6 +24,7 @@ export type GenerateInput = {
 export async function generateSocialMediaCaption({
   platform,
   idea,
+  outputLanguage = "auto",
   media,
 }: GenerateInput): Promise<string> {
   void media; // belum dipakai, lihat NOTE di atas
@@ -29,7 +32,7 @@ export async function generateSocialMediaCaption({
   const res = await apiFetch("/api/generate/social-media-caption", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ platform, idea }),
+    body: JSON.stringify({ platform, idea, outputLanguage }),
   });
 
   const data = await res.json();

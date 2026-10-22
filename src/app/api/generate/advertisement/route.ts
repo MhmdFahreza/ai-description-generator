@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { withGuard } from "@/lib/api-guard";
+import {
+  sanitizeOutputLanguage,
+  getLanguageInstruction,
+} from "@/lib/output-language";
 
 export const runtime = "nodejs";
 
@@ -19,6 +23,7 @@ export const POST = withGuard(
   [
     { name: "description", required: true, freeText: true },
     { name: "style", required: false },
+    { name: "outputLanguage", required: false },
   ],
   async (body) => {
     const apiKey = process.env.GROQ_API_KEY;
@@ -30,6 +35,7 @@ export const POST = withGuard(
     }
 
     const description = (body.description as string).trim();
+    const outputLanguage = sanitizeOutputLanguage(body.outputLanguage);
     const styleGuide = styleGuides[(body.style as string) ?? "casual"] ?? styleGuides.casual;
 
     try {
@@ -49,10 +55,11 @@ export const POST = withGuard(
             {
               role: "system",
               content:
-                "Kamu copywriter iklan Indonesia yang berpengalaman membuat teks iklan yang menarik dan konversi tinggi. " +
-                `Tulis teks iklan dalam Bahasa Indonesia dengan gaya ${styleGuide}. ` +
+                "Kamu adalah copywriter iklan profesional yang berpengalaman membuat teks iklan yang menarik dan berkonversi tinggi. " +
+                `Gaya penulisan: ${styleGuide}. ` +
                 "Panjang 3-6 kalimat, fokus ke keunggulan produk/jasa, manfaat untuk konsumen, dan ajakan bertindak (CTA) yang jelas. " +
-                "Jangan pakai heading, markdown, atau bullet point — langsung teks paragraf yang siap pakai.",
+                "Jangan pakai heading, markdown, atau bullet point — langsung teks paragraf yang siap pakai.\n\n" +
+                getLanguageInstruction(outputLanguage),
             },
             {
               role: "user",

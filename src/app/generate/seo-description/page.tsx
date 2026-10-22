@@ -13,6 +13,8 @@ import {
   IconChevronDown,
 } from "@/componenets/icons";
 import { toneOptions } from "@/constants/tones";
+import { type OutputLanguage } from "@/constants/languages";
+import { LanguageSelect } from "@/componenets/language-select";
 import { generateSeoDescription } from "@/lib/generators/seo-description";
 import { ssGet, ssSet } from "@/lib/session-storage";
 
@@ -23,12 +25,14 @@ const SS_KEY = "seo-description-form";
 interface FormState {
   concept: string;
   tone: string;
+  outputLanguage: OutputLanguage;
   result: string | null;
 }
 
 export default function SeoDescriptionPage() {
   const [concept, setConcept] = useState("");
   const [tone, setTone] = useState(toneOptions[0].value);
+  const [outputLanguage, setOutputLanguage] = useState<OutputLanguage>("auto");
 
   const [result, setResult] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,13 +44,14 @@ export default function SeoDescriptionPage() {
     if (!saved) return;
     if (saved.concept) setConcept(saved.concept);
     if (saved.tone) setTone(saved.tone);
+    if (saved.outputLanguage) setOutputLanguage(saved.outputLanguage);
     if (saved.result) setResult(saved.result);
   }, []);
 
   // Persist whenever state changes
   useEffect(() => {
-    ssSet<FormState>(SS_KEY, { concept, tone, result });
-  }, [concept, tone, result]);
+    ssSet<FormState>(SS_KEY, { concept, tone, outputLanguage, result });
+  }, [concept, tone, outputLanguage, result]);
 
   const canGenerate = concept.trim().length > 0 && !isLoading;
 
@@ -55,7 +60,7 @@ export default function SeoDescriptionPage() {
     setIsLoading(true);
     setCopied(false);
     try {
-      const text = await generateSeoDescription({ concept, tone });
+      const text = await generateSeoDescription({ concept, tone, outputLanguage });
       setResult(text);
     } finally {
       setIsLoading(false);
@@ -141,6 +146,12 @@ export default function SeoDescriptionPage() {
                   <IconChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9A9CA5]" />
                 </div>
               </div>
+
+              <LanguageSelect
+                value={outputLanguage}
+                onChange={setOutputLanguage}
+                accentColor={CORAL}
+              />
 
               <button
                 type="button"

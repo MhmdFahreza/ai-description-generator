@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { withGuard } from "@/lib/api-guard";
+import {
+  sanitizeOutputLanguage,
+  getLanguageInstruction,
+} from "@/lib/output-language";
 
 export const runtime = "nodejs";
 
@@ -29,6 +33,7 @@ export const POST = withGuard(
     { name: "description", required: true, freeText: true },
     { name: "platform", required: false },
     { name: "style", required: false },
+    { name: "outputLanguage", required: false },
   ],
   async (body) => {
     const apiKey = process.env.GROQ_API_KEY;
@@ -41,6 +46,7 @@ export const POST = withGuard(
 
     const topic = (body.topic as string).trim();
     const description = (body.description as string).trim();
+    const outputLanguage = sanitizeOutputLanguage(body.outputLanguage);
 
     const platformGuide = platformGuides[(body.platform as string) ?? "general"] ?? platformGuides.general;
     const styleGuide = styleGuides[(body.style as string) ?? "question"] ?? styleGuides.question;
@@ -62,10 +68,11 @@ export const POST = withGuard(
             {
               role: "system",
               content:
-                `Kamu content creator Indonesia yang ahli bikin kalimat pembuka (hook) yang bikin orang berhenti scroll. ` +
-                `Buatin persis ${HOOK_COUNT} pilihan hook dalam Bahasa Indonesia dengan gaya "${styleGuide}" ` +
+                "Kamu adalah content creator profesional yang ahli membuat kalimat pembuka (hook) yang membuat audiens berhenti scrolling. " +
+                `Buatkan persis ${HOOK_COUNT} pilihan hook dengan gaya "${styleGuide}" ` +
                 `yang dioptimalkan untuk platform ${platformGuide}. ` +
-                "Tulis SATU hook per baris, tanpa nomor, tanpa bullet, tanpa tanda kutip, tanpa penjelasan tambahan — cuma daftar hooknya aja, satu hook per baris.",
+                "Tulis SATU hook per baris, tanpa nomor, tanpa bullet, tanpa tanda kutip, tanpa penjelasan tambahan — hanya daftar hooknya saja, satu hook per baris.\n\n" +
+                getLanguageInstruction(outputLanguage),
             },
             {
               role: "user",
