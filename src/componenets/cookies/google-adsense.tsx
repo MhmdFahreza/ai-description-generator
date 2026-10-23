@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { getSavedPreferences, type CookiePreferences } from "@/lib/cookies";
-import { ADSENSE_ID, deleteAdCookies } from "@/lib/adsense";
+import { ADSENSE_ID, ADSENSE_ENABLED, deleteAdCookies } from "@/lib/adsense";
 
 const SCRIPT_ID = "adsense-script";
 
@@ -22,7 +22,9 @@ export default function GoogleAdSense() {
 
   useEffect(() => {
     const clientId = ADSENSE_ID;
-    if (!clientId) return;
+    // Do nothing if publisher ID is missing or site is not yet approved/enabled.
+    // Site verification (meta tag) in layout.tsx is independent of this check.
+    if (!clientId || !ADSENSE_ENABLED) return;
 
     const apply = (advertising: boolean) => {
       if (advertising) {

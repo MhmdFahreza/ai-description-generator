@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getSavedPreferences, type CookiePreferences } from "@/lib/cookies";
-import { ADSENSE_ID } from "@/lib/adsense";
+import { ADSENSE_ID, ADSENSE_ENABLED } from "@/lib/adsense";
 
 type AdUnitProps = {
   slot: string;
@@ -24,7 +24,8 @@ export default function AdUnit({ slot, className }: AdUnitProps) {
   }, []);
 
   useEffect(() => {
-    if (!allowed || !ADSENSE_ID || pushed.current) return;
+    // Guard: requires consent, feature flag, and a valid publisher ID.
+    if (!allowed || !ADSENSE_ENABLED || !ADSENSE_ID || pushed.current) return;
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
       pushed.current = true;
@@ -33,7 +34,7 @@ export default function AdUnit({ slot, className }: AdUnitProps) {
     }
   }, [allowed]);
 
-  if (!allowed || !ADSENSE_ID) return null;
+  if (!allowed || !ADSENSE_ENABLED || !ADSENSE_ID) return null;
 
   return (
     <ins
