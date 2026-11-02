@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://descriptiongenerator.web.id"),
   title: "Ai Description Generator",
   description: "Generated descriptions for your products, social media, and more.",
   other: process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID
